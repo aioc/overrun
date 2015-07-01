@@ -153,15 +153,15 @@ bool new_game(const string& args) {
   size_t num_players, boardsize, player_id;
   std::istringstream builder(args);
   builder >> num_players >> boardsize >> player_id;
-  if (!builder.good()) {
-    util::err("builder failed");
+  if (builder.bad()) {
+    util::err("new game builder failed");
     return false;
   }
 
   if (num_players >= MAX_PLAYERS ||
       boardsize >= MAX_SIZE ||
       player_id >= MAX_PLAYER_ID) {
-    util::err("bad params");
+    util::err("new game had bad params");
     return false;
   }
 
@@ -186,13 +186,13 @@ bool update_cell(const string& args) {
     int value;
     builder >> y >> x >> value;
 
-    if (!builder.good()) {
-      util::err("builder failed");
+    if (builder.bad()) {
+      util::err("update cell builder failed");
       return false;
     }
 
     if (x >= state.map.size() || y >= state.map.size()) {
-      util::err("bad params");
+      util::err("update cell had bad params");
       return false;
     }
 
@@ -211,13 +211,13 @@ bool update_money(const string& args) {
     int value;
     builder >> value;
 
-    if (!builder.good()) {
-      util::err("builder failed");
+    if (builder.bad()) {
+      util::err("update money builder failed");
       return false;
     }
 
     if (value < 0) {
-      util::err("bad params");
+      util::err("update money had bad params");
       return false;
     }
 
@@ -237,13 +237,13 @@ bool update_unit(const string& args) {
     Unit::Level level;
     builder >> player_id >> unit_id >> y >> x >> level;
 
-    if (!builder.good()) {
-      util::err("builder failed");
+    if (builder.bad()) {
+      util::err("update unit builder failed");
       return false;
     }
 
     if (x >= state.map.size() || y >= state.map.size()) {
-      util::err("bad params");
+      util::err("update unit had bad params");
       return false;
     }
 
@@ -279,7 +279,7 @@ bool user_turn(const string& args) {
   clientDoTurn();
   state.fsm = State::ILLEGAL;
 
-  std::ostringstream builder("MOVE");
+  std::ostringstream builder("MOVE", std::ostringstream::ate);
   switch (state.buffer_builds.size()) {
     case 0:
       builder << " " << 0;
@@ -342,7 +342,7 @@ bool sendline(const string& rawdata) {
   const string line = rawdata + "\n";
   if (echo_mode) {
     fprintf(stderr, "\x1b[1;35m> \"");
-    fprintf(stderr, "%s", line.c_str());
+    fprintf(stderr, "%s", rawdata.c_str());
     fprintf(stderr, "\"\x1b[0m\n");
   }
 
