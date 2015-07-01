@@ -143,9 +143,9 @@ bool name(const string& args) {
   std::ostringstream builder;
   builder << "NAME"
       << " " << player.name
-      << " " << player.r
-      << " " << player.g
-      << " " << player.b;
+      << " " << (int) player.r
+      << " " << (int) player.g
+      << " " << (int) player.b;
   return net::sendline(builder.str());
 }
 
@@ -340,6 +340,12 @@ namespace net {
 
 bool sendline(const string& rawdata) {
   const string line = rawdata + "\n";
+  if (echo_mode) {
+    fprintf(stderr, "\x1b[1;35m> \"");
+    fprintf(stderr, "%s", line.c_str());
+    fprintf(stderr, "\"\x1b[0m\n");
+  }
+
   ssize_t sent = send(sock, line.c_str(), line.size(), 0);
   return sent == line.size();
 }
@@ -348,12 +354,20 @@ bool sendline(const string& rawdata) {
 bool recvline(string* data) {
   data->clear();
   char c;
+  bool success = false;
   while (recv(sock, &c, 1, 0) == 1) {
-    if (c == '\n')
-      return true;
+    if (c == '\n') {
+      success = true;
+      break;
+	}
     *data += c;
   }
-  return false;
+  if (echo_mode) {
+    fprintf(stderr, "\x1b[1;32m< \"");
+    fprintf(stderr, "%s", data->c_str());
+    fprintf(stderr, "\"\x1b[0m\n");
+  }
+  return success;
 }
 
 }  // namespace net
