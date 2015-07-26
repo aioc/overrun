@@ -4,15 +4,12 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javafx.geometry.Pos;
-
 import com.ausinformatics.overrun.visualisation.VisualGameState;
 import com.ausinformatics.phais.core.visualisation.EventBasedFrameVisualiser;
 import com.ausinformatics.phais.utils.Position;
 
 public class GameState {
 
-	private int numPlayers;
 	private int boardSize;
 	private TerrainMap map;
 	private MoveReporter reporter;
@@ -24,7 +21,6 @@ public class GameState {
 	private ArrayList<ArrayList<Unit>> allUnits;
 
 	public GameState(int numPlayers, int boardSize, TerrainMap map, MoveReporter reporter) {
-		this.numPlayers = numPlayers;
 		this.boardSize = boardSize;
 		this.map = map;
 		this.reporter = reporter;
@@ -65,7 +61,7 @@ public class GameState {
 		}
 		for (UnitMove u : move.unitMoves) {
 			if (!playersUnits.containsKey(u.id)) {
-				// TODO: Decide if we should kick them.
+				reporter.sendError(id, "You gave an invalid id (either dead or non-existant): " + u.id);
 				continue;
 			}
 			Unit unit = playersUnits.get(u.id);
@@ -77,12 +73,12 @@ public class GameState {
 			if (newP.r < 0 || newP.c < 0 || newP.r >= boardSize || newP.c >= boardSize) {
 				newP = unit.p;
 				u = UnitMove.DEFAULT_MOVE;
-				// TODO: Give them an error.
+				reporter.sendError(id, "You moved a unit out of bounds. id: " + u.id);
 			}
 			if (map.getTerrain(newP.c, newP.r) == TerrainMap.WALL) {
-				// TODO: Give them an error.
 				newP = unit.p;
 				u = UnitMove.DEFAULT_MOVE;
+				reporter.sendError(id, "You moved a unit into a wall. id: " + u.id);
 			}
 			// The interesting bit... fights!
 			if (unitsOnBoard[newP.r][newP.c] != null) {
@@ -111,9 +107,10 @@ public class GameState {
 					money[id]++;
 					int res = map.getTerrain(newP.c, newP.r) - 1;
 					map.setTerrain(newP.c, newP.r, res);
-					// TODO: Update people that the square changed.
+					reporter.personMoneyChange(id, 1);
+					reporter.squareUpdated(newP, res);
 				} else {
-					// TODO: Error them for extracting empty square.
+					reporter.sendError(id, "You tried to extract from an empty square. id: " + u.id);
 				}
 			}
 		}
@@ -134,7 +131,7 @@ public class GameState {
 							unitsOnBoard[po.y][po.x] = null;
 						}
 					} else {
-						// TODO: Error them out
+						reporter.sendError(id, "You tried to create a unit when your home square was occupied.");
 						succeeded = false;
 					}
 				}
@@ -143,10 +140,10 @@ public class GameState {
 						createUnit(id, stre);
 					}
 					money[id] -= move.buildCost;
-					// TODO: Update people about money changing.
+					reporter.personMoneyChange(id, -move.buildCost);
 				}
 			} else {
-				// TODO: Error them for spending too much.
+				reporter.sendError(id, "You tried to spend to much.");
 			}
 		}
 		// TODO: Send end of turn...
@@ -159,7 +156,7 @@ public class GameState {
 	public void endGame() {
 		// TODO: Report that the game is over to the visualiser.
 	}
-	
+
 	private int getStr(int cost) {
 		return cost;
 	}
@@ -167,7 +164,7 @@ public class GameState {
 	private void killUnit(Unit u) {
 		u.stength = 0;
 		unitsOnBoard[u.p.r][u.p.c] = null;
-		// TODO: Tell people these died.
+		reporter.unitUpdated(u);
 	}
 
 	private void createUnit(int playerId, int strength) {
@@ -176,7 +173,7 @@ public class GameState {
 		Unit u = new Unit(strength, curUnitId[playerId]++, playerId, p);
 		unitsOnBoard[p.r][p.c] = u;
 		allUnits.get(playerId).add(u);
-		// TODO: Tell people these were created.
+		reporter.unitCreated(u);
 	}
 
 	private void collectDeadUnits(int id) {
