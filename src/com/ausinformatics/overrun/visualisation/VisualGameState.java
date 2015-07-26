@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import com.ausinformatics.phais.core.interfaces.PersistentPlayer;
+import com.ausinformatics.phais.utils.Position;
 import com.ausinformatics.overrun.Player;
 import com.ausinformatics.overrun.Unit;
 import com.ausinformatics.overrun.TerrainMap;
@@ -16,6 +17,7 @@ public class VisualGameState {
     public int numPlayers;
     public int curTurn;
     public String[] names;
+    public int[] money;
     public Color[] colours;
     public boolean isDead[];
     public String winner;
@@ -24,6 +26,7 @@ public class VisualGameState {
 
     public VisualGameState(int boardSize, int numPlayers, List<PersistentPlayer> players, TerrainMap m) {
         names = new String[numPlayers];
+        money = new int[numPlayers];
         colours = new Color[numPlayers];
         isDead = new boolean[numPlayers];
         units = new ArrayList<List<Unit>>();
@@ -31,6 +34,7 @@ public class VisualGameState {
 
         for (int i = 0; i < numPlayers; i++) {
             names[i] = players.get(i).getName();
+            money[i] = 0;
             colours[i] = new Color(((Player) players.get(i)).getColour());
             isDead[i] = false;
             units.add(new ArrayList<Unit>());
@@ -43,6 +47,9 @@ public class VisualGameState {
                 }
             }
         }
+    }
+
+    public void mineSquare(Position p) {
     }
 
     private double colourDistance(Color c1, Color c2) {

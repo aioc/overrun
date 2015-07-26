@@ -116,7 +116,6 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 
     @Override
     public void generateState(VisualGameState state, int sWidth, int sHeight, Graphics2D g) {
-        // Ignore the g here. We're hijacking; keep our own sheet.
         if (!render)
             return;
         pulseCounter++;
@@ -145,17 +144,22 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
     public void eventEnded(VisualGameEvent e, VisualGameState state) {
         if (e instanceof UnitCreatedEvent) {
             UnitCreatedEvent ev = (UnitCreatedEvent) e;
-            state.units.get(ev.player).add(new Unit(ev.player,
+            state.units.get(ev.player).add(new Unit(ev.strength,
                                                     ev.unitId,
-                                                    ev.strength,
+                                                    ev.player,
                                                     ev.p));
         } else if (e instanceof UnitUpdatedEvent) {
-            UnitUpdatedEvent ev = (UnitCreatedEvent) e;
-            state.units.get(ev.player).add(new Unit(ev.player,
+            UnitUpdatedEvent ev = (UnitUpdatedEvent) e;
+            state.units.get(ev.player).add(new Unit(ev.currStrength,
                                                     ev.unitId,
-                                                    ev.currStrength,
+                                                    ev.player,
                                                     ev.start.move(ev.dir)));
         } else if (e instanceof MoneyDeltaEvent) {
+            MoneyDeltaEvent ev = (MoneyDeltaEvent) e;
+            state.money[ev.playerId] += ev.moneyDelta;
+            for (Position pos : ev.minedBlocks) {
+                state.mineSquare(pos);
+            }
         }
     }
 
