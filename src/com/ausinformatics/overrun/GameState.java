@@ -4,6 +4,9 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.ausinformatics.overrun.reporters.CopyingReporter;
+import com.ausinformatics.overrun.reporters.Reporter;
+import com.ausinformatics.overrun.reporters.VisualReporter;
 import com.ausinformatics.overrun.visualisation.VisualGameState;
 import com.ausinformatics.phais.core.visualisation.EventBasedFrameVisualiser;
 import com.ausinformatics.phais.utils.Position;
@@ -12,15 +15,14 @@ public class GameState {
 
 	private int boardSize;
 	private TerrainMap map;
-	private MoveReporter reporter;
-	private EventBasedFrameVisualiser<VisualGameState> vis;
+	private Reporter reporter;
 
 	private Unit[][] unitsOnBoard;
 	private int[] money;
 	private int[] curUnitId;
 	private ArrayList<ArrayList<Unit>> allUnits;
 
-	public GameState(int numPlayers, int boardSize, TerrainMap map, MoveReporter reporter) {
+	public GameState(int numPlayers, int boardSize, TerrainMap map, Reporter reporter) {
 		this.boardSize = boardSize;
 		this.map = map;
 		this.reporter = reporter;
@@ -35,7 +37,7 @@ public class GameState {
 	}
 
 	public void setUpForVisualisation(EventBasedFrameVisualiser<VisualGameState> vis) {
-		this.vis = vis;
+		this.reporter = new CopyingReporter(reporter, new VisualReporter(vis));
 	}
 
 	// This should be able to be called on already dead players.
@@ -88,20 +90,21 @@ public class GameState {
 					u = UnitMove.DEFAULT_MOVE;
 				} else {
 					// Fight!
-					int lowestStr = Math.min(unit.stength, otherU.stength);
-					// TODO: Tell people that the strength changed.
-					unit.stength -= lowestStr;
-					otherU.stength -= lowestStr;
-					if (otherU.stength <= 0) {
+					int lowestStr = Math.min(unit.strength, otherU.strength);
+					unit.strength -= lowestStr;
+					otherU.strength -= lowestStr;
+					reporter.unitUpdated(unit);
+					reporter.unitUpdated(otherU);
+					if (otherU.strength <= 0) {
 						unitsOnBoard[newP.r][newP.c] = null;
 					}
 				}
 			}
-			if (unit.stength > 0) {
+			if (unit.strength > 0) {
 				unitsOnBoard[newP.r][newP.c] = unit;
 			}
 			unit.p = newP;
-			// TODO: Tell people that people moved.
+			reporter.unitUpdated(unit);
 			if (u.move == UnitMove.EXTRACT) {
 				if (map.getTerrain(newP.c, newP.r) > 0) {
 					money[id]++;
@@ -123,11 +126,11 @@ public class GameState {
 					Unit otherU = unitsOnBoard[po.y][po.x];
 					if (otherU.ownerId != id) {
 						// Fight!
-						int lowestStr = Math.min(stre, otherU.stength);
-						// TODO: Tell people that the strength changed.
+						int lowestStr = Math.min(stre, otherU.strength);
+						reporter.unitUpdated(otherU);
 						stre -= lowestStr;
-						otherU.stength -= lowestStr;
-						if (otherU.stength <= 0) {
+						otherU.strength -= lowestStr;
+						if (otherU.strength <= 0) {
 							unitsOnBoard[po.y][po.x] = null;
 						}
 					} else {
@@ -146,23 +149,27 @@ public class GameState {
 				reporter.sendError(id, "You tried to spend to much.");
 			}
 		}
-		// TODO: Send end of turn...
+		reporter.endTurn();
 	}
 
 	public int getScore(int id) {
-		return 0;
+		int total = 0;
+		for (Unit u : allUnits.get(id)) {
+			total += u.strength;
+		}
+		return total;
 	}
 
 	public void endGame() {
-		// TODO: Report that the game is over to the visualiser.
+		reporter.endTurn();
 	}
 
 	private int getStr(int cost) {
 		return cost;
 	}
 
-	private void killUnit(Unit u) {
-		u.stength = 0;
+	private void killUnit(Unit u) {	
+		u.strength = 0;
 		unitsOnBoard[u.p.r][u.p.c] = null;
 		reporter.unitUpdated(u);
 	}

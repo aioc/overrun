@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.ausinformatics.overrun.reporters.ConnectionReporter;
 import com.ausinformatics.overrun.visualisation.VisualGameState;
 import com.ausinformatics.phais.core.interfaces.PersistentPlayer;
 import com.ausinformatics.phais.core.server.ClientConnection;
@@ -21,7 +22,7 @@ public class GameRunner implements GameHandler {
 	private List<PersistentPlayer> players;
 	private Map<PersistentPlayer, Integer> results;
 	private EventBasedFrameVisualiser<VisualGameState> vis;
-	private MoveReporter reporter;
+	private ConnectionReporter reporter;
 
 	private int[] finalRanks;
 
@@ -29,7 +30,7 @@ public class GameRunner implements GameHandler {
 		this.players = players;
 		results = new HashMap<PersistentPlayer, Integer>();
 		finalRanks = new int[players.size()];
-		reporter = new MoveReporter(players.size());
+		reporter = new ConnectionReporter(players.size());
 		state = new GameState(players.size(), boardSize, map, reporter);
 	}
 
