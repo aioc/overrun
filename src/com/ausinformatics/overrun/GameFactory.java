@@ -42,10 +42,11 @@ public class GameFactory implements GameBuilder {
 				p.getConnection().disconnect();
 			}
 		}
-		GameRunner gr = new GameRunner(players, boardSize, mapFactory.fromDefaultParams(players.size(), boardSize));
+		TerrainMap map = mapFactory.fromDefaultParams(players.size(), boardSize);
+		GameRunner gr = new GameRunner(players, boardSize, map);
 		FrameVisualiser fv = new FrameVisualiser();
 		EventBasedFrameVisualiser<VisualGameState> vis = new EventBasedFrameVisualiser<VisualGameState>(gr, fv,
-				new VisualGameState()); // TODO: Fix up this stuff.
+				new VisualGameState(boardSize, players.size(), players, map)); // TODO: Fix up this stuff.
 
 		gr.setEventVisualiser(vis);
 		return vis;
