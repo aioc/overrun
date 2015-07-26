@@ -206,7 +206,9 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         } else if (e instanceof MoneyDeltaEvent) {
             e.totalFrames = MONEY_DELTA_FRAMES;
         } else if (e instanceof EndTurnEvent) {
-            e.totalFrames = Math.max(CREATED_FRAMES, UPDATED_FRAMES);
+            e.totalFrames = Math.max(CREATED_FRAMES,
+                                     Math.max(MONEY_DELTA_FRAMES,
+                                              UPDATED_FRAMES));
         } else if (e instanceof EndGameEvent) {
             e.totalFrames = 60;
         }
