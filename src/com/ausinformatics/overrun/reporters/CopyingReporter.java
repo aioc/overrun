@@ -48,6 +48,7 @@ public class CopyingReporter implements Reporter {
 	
 	@Override
 	public void endTurn() {
+		System.out.println("ET");
 		r1.endTurn();
 		r2.endTurn();
 	}

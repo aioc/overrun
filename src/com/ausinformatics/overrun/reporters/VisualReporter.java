@@ -68,6 +68,7 @@ public class VisualReporter implements Reporter {
 		}
 		pendingEvents.add(new EndTurnEvent());
 		vis.giveEvents(pendingEvents);
+		reset();
 	}
 
 	private int getDirMoved(Position oldP, Position newP) {

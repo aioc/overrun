@@ -7,6 +7,7 @@ public class OverrunMain {
 	public static void main(String[] args) {
 		Config config = new Config();
 		config.parseArgs(args);
+		config.maxParallelGames = 1;
 		TerrainMapFactory mapFactory = new TerrainMapFactory();
 		GameFactory f = new GameFactory(mapFactory);
 		//config.gameCommands.put("PARAMS", new GameParamsCommand(f));

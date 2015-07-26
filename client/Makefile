@@ -1,4 +1,4 @@
-CXX = clang++
+CXX = g++
 CXXFLAGS = -Wall -Werror -O2 -std=c++11 -I.
 
 CLIENT_BINS = $(patsubst %.cc,%.bin,$(wildcard players/*.cc))
