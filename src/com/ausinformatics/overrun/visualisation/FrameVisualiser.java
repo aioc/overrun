@@ -90,6 +90,17 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         render = true;
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, sWidth, sHeight);
+        for (int y = 0; y < state.boardSize; y++) {
+            for (int x = 0; x < state.boardSize; x++) {
+                int lwall = state.map.getTerrain(x, y);
+                if (lwall < 0) {
+                    g.setColor(state.colours[-lwall - 1]);
+                } else if (lwall == 0) {
+                    g.setColor(Color.black);
+                }
+                boardBoxes[y][x].fill(g);
+            }
+        }
         //for (int i = 0; i < boardN; i++) {
         //    for (int j = 0; j < boardN; j++) {
         //        if (i == 0 || j == 0 || i == boardN - 1 || j == boardN - 1) {
@@ -117,18 +128,13 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
     public void generateState(VisualGameState state, int sWidth, int sHeight, Graphics2D g) {
         if (!render)
             return;
-        pulseCounter++;
 
+        pulseCounter++;
         for (int y = 0; y < state.boardSize; y++) {
             for (int x = 0; x < state.boardSize; x++) {
-                int lwall = state.map.getTerrain(x, y);
-                // TODO move the static shit into generateBackground
-                if (lwall < 0) {
-                    g.setColor(state.colours[-lwall - 1]);
-                } else if (lwall == 0) {
-                    g.setColor(Color.black);
-                } else {
-                    float colorMul = ((float) lwall)/50;
+                int mineralPatch = state.map.getTerrain(x, y);
+                if (mineralPatch > 0) {
+                    float colorMul = ((float) mineralPatch)/50;
                     colorMul = Math.min(1, colorMul);
                     Color interiorColor = avColor(Color.white,
                             Color.getHSBColor((System.currentTimeMillis()%2000)/2000f,0.2f,0.4f),
@@ -142,15 +148,10 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         for (int i = 0; i < state.numPlayers; i++) {
             for (int j = 0, len = state.units.get(i).size(); j < len; j++) {
                 Unit u = state.units.get(i).get(j);
-                float colorMul = ((float) u.strength)/100;
-
-                colorMul = Math.min(1, colorMul); // in range [0,1]
-                colorMul = (float) (0.3 + 0.7*colorMul);
-
-                g.setColor(avColor(Color.gray, state.colours[i], colorMul));
+                g.setColor(getUnitFillColour(u, state.colours[i]));
                 Box box = boardBoxes[u.p.r][u.p.c];
                 g.fillOval(box.left, box.top, box.width, box.height);
-                g.setColor(avColor(Color.black, state.colours[i], 0.5f));
+                g.setColor(getUnitOutlineColour(u, state.colours[i]));
                 g.drawOval(box.left, box.top, box.width, box.height);
             }
         }
@@ -159,6 +160,7 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 
     @Override
     public void animateEvents(VisualGameState state, List<VisualGameEvent> events, int sWidth, int sHeight, Graphics2D g) {
+        BoxFactory f = new BoxFactory(sWidth, sHeight);
         for (VisualGameEvent ev : events) {
             if (ev instanceof UnitUpdatedEvent) {
                 UnitUpdatedEvent e = (UnitUpdatedEvent) ev;
@@ -167,7 +169,12 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
                     if (u.myId == e.unitId)
                         state.units.get(e.player).remove(u);
                 }
-                /* Tween on currentStrength */
+                /* Tween on currentStrength and current position*/
+                tweenUpdateEvent(state, f, e, g);
+            } else if (ev instanceof UnitCreatedEvent) {
+                // Just draw the unit
+            } else if (ev instanceof MoneyDeltaEvent) {
+                // Update the player's money
             }
         }
         if (state.winner != null) {
@@ -245,6 +252,16 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         return f.deriveFont(minSize);
     }
 
+    private void tweenUpdateEvent(VisualGameState state, BoxFactory f, UnitUpdatedEvent event, Graphics2D g) {
+        Unit startUnit = new Unit(event.prevStrength, -1, -1, null);
+        Color startColour = getUnitFillColour(startUnit, state.colours[event.player]);
+        Unit endUnit = new Unit(event.currStrength, -1, -1, null);
+        Color endColour = getUnitFillColour(endUnit, state.colours[event.player]);
+        int amount = event.curFrame;
+        g.setColor(avColor(startColour, endColour, amount/event.totalFrames));
+        tweenMovement(f, event.start, event.start.move(event.dir), amount, g);
+    }
+
     private void tweenMovement(BoxFactory f, Position from, Position to, int amo, Graphics2D g) {
         int boxSize = boardBoxes[0][0].width;
         int borderIn = boxSize / 4;
@@ -264,6 +281,22 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
             b = f.fromDimensions(b.left, b.top, b.width, b.height - amoDiff);
         }
         b.fill(g);
+    }
+
+    private float getColourMulForUnit(Unit u) {
+        float colourMul = ((float) u.strength)/100;
+
+        colourMul = Math.min(1, colourMul); // in range [0,1]
+        colourMul = (float) (0.3 + 0.7*colourMul);
+        return colourMul;
+    }
+
+    private Color getUnitFillColour(Unit u, Color c) {
+        return avColor(Color.gray, c, getColourMulForUnit(u));
+    }
+
+    private Color getUnitOutlineColour(Unit u, Color c) {
+        return avColor(Color.black, c, 0.5f);
     }
 
     private Color avColor(float r1, float g1, float b1, float r2, float g2, float b2, float colorMul) {
