@@ -1,25 +1,22 @@
 package com.ausinformatics.overrun.visualisation;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ausinformatics.overrun.TerrainMap;
+import com.ausinformatics.overrun.Unit;
 import com.ausinformatics.phais.core.visualisation.EndTurnEvent;
 import com.ausinformatics.phais.core.visualisation.FrameVisualisationHandler;
 import com.ausinformatics.phais.core.visualisation.VisualGameEvent;
 import com.ausinformatics.phais.utils.Position;
 import com.ausinformatics.phais.utils.VisualisationUtils;
-import com.ausinformatics.phais.utils.VisualisationUtils.BoxFactory;
 import com.ausinformatics.phais.utils.VisualisationUtils.Box;
-import com.ausinformatics.overrun.TerrainMap;
-import com.ausinformatics.overrun.Unit;
+import com.ausinformatics.phais.utils.VisualisationUtils.BoxFactory;
 
 public class FrameVisualiser implements FrameVisualisationHandler<VisualGameState>{
     private boolean render;
@@ -107,16 +104,6 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
                 boardBoxes[y][x].fill(g);
             }
         }
-        //for (int i = 0; i < boardN; i++) {
-        //    for (int j = 0; j < boardN; j++) {
-        //        if (i == 0 || j == 0 || i == boardN - 1 || j == boardN - 1) {
-        //            g.setColor(Color.BLACK);
-        //        } else {
-        //            g.setColor(Color.WHITE);
-        //        }
-        //        boardBoxes[i][j].fill(g);
-        //    }
-        //}
         g.setColor(Color.LIGHT_GRAY);
         titleBox.fill(g);
         for (int i = 0; i < state.numPlayers; i++) {
@@ -126,6 +113,9 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         try {
             rootFont = Font.createFont(Font.TRUETYPE_FONT, FrameVisualiser.class.getResourceAsStream("emulogic.ttf"));
         } catch (FontFormatException | IOException e) {
+            System.err.println("Couldn't find the resource \"emulogic.ttf\","
+                    + "you probably misconfigured something when building the"
+                    + "server");
             rootFont = g.getFont();
         }
     }
