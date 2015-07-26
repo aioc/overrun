@@ -37,9 +37,9 @@ public class CopyingReporter implements Reporter {
 	}
 
 	@Override
-	public void unitUpdated(Unit u) {
-		r1.unitUpdated(u);
-		r2.unitUpdated(u);
+	public void unitUpdated(Unit oldU, Unit newU) {
+		r1.unitUpdated(oldU, newU);
+		r2.unitUpdated(oldU, newU);
 	}
 	
 	@Override

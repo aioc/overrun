@@ -38,7 +38,7 @@ public class ConnectionReporter implements Reporter {
 	}
 
 	@Override
-	public void unitUpdated(Unit u) {
+	public void unitUpdated(Unit oldU, Unit newU) {
 		// TODO Auto-generated method stub
 
 	}

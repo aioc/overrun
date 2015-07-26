@@ -18,4 +18,8 @@ public class Unit {
 	public boolean isAlive() {
 		return strength > 0;
 	}
+	
+	public Unit clone() {
+		return new Unit(strength, myId, ownerId, p.clone());
+	}
 }

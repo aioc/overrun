@@ -13,7 +13,7 @@ public interface Reporter {
 	
 	public void unitCreated(Unit u);
 	
-	public void unitUpdated(Unit u);
+	public void unitUpdated(Unit oldU, Unit newU);
 	
 	public void endTurn();
 	

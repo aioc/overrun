@@ -91,10 +91,12 @@ public class GameState {
 				} else {
 					// Fight!
 					int lowestStr = Math.min(unit.strength, otherU.strength);
+					Unit copyU = unit.clone();
 					unit.strength -= lowestStr;
+					reporter.unitUpdated(copyU, unit);
+					copyU = otherU.clone();
 					otherU.strength -= lowestStr;
-					reporter.unitUpdated(unit);
-					reporter.unitUpdated(otherU);
+					reporter.unitUpdated(copyU, otherU);
 					if (otherU.strength <= 0) {
 						unitsOnBoard[newP.r][newP.c] = null;
 					}
@@ -103,8 +105,9 @@ public class GameState {
 			if (unit.strength > 0) {
 				unitsOnBoard[newP.r][newP.c] = unit;
 			}
+			Unit copyU = unit.clone();
 			unit.p = newP;
-			reporter.unitUpdated(unit);
+			reporter.unitUpdated(copyU, unit);
 			if (u.move == UnitMove.EXTRACT) {
 				if (map.getTerrain(newP.c, newP.r) > 0) {
 					money[id]++;
@@ -127,9 +130,10 @@ public class GameState {
 					if (otherU.ownerId != id) {
 						// Fight!
 						int lowestStr = Math.min(stre, otherU.strength);
-						reporter.unitUpdated(otherU);
-						stre -= lowestStr;
+						Unit copyU = otherU.clone();
 						otherU.strength -= lowestStr;
+						reporter.unitUpdated(copyU, otherU);
+						stre -= lowestStr;
 						if (otherU.strength <= 0) {
 							unitsOnBoard[po.y][po.x] = null;
 						}
@@ -169,9 +173,10 @@ public class GameState {
 	}
 
 	private void killUnit(Unit u) {	
+		Unit copyU = u.clone();
 		u.strength = 0;
 		unitsOnBoard[u.p.r][u.p.c] = null;
-		reporter.unitUpdated(u);
+		reporter.unitUpdated(copyU, u);
 	}
 
 	private void createUnit(int playerId, int strength) {
