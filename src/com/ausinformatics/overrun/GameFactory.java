@@ -46,7 +46,7 @@ public class GameFactory implements GameBuilder {
 		GameRunner gr = new GameRunner(players, boardSize, map);
 		FrameVisualiser fv = new FrameVisualiser();
 		EventBasedFrameVisualiser<VisualGameState> vis = new EventBasedFrameVisualiser<VisualGameState>(gr, fv,
-				new VisualGameState(boardSize, players.size(), players, map)); // TODO: Fix up this stuff.
+				new VisualGameState(boardSize, players.size(), players, map));
 
 		gr.setEventVisualiser(vis);
 		return vis;

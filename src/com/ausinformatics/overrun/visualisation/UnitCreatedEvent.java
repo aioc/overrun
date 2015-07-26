@@ -7,10 +7,12 @@ public class UnitCreatedEvent extends VisualGameEvent {
     public int player;
     public int unitId;
     public Position p;
+    public int strength;
 
-    public UnitCreatedEvent(int player, int unitId, Position p) {
+    public UnitCreatedEvent(int player, int unitId, Position p, int strength) {
         this.player = player;
         this.unitId = unitId;
         this.p = p;
+        this.strength = strength;
     }
 }
