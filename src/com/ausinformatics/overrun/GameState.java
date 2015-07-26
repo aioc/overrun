@@ -9,6 +9,7 @@ public class GameState {
 	private int boardSize;
 	private TerrainMap map;
 	private MoveReporter reporter;
+	private EventBasedFrameVisualiser<VisualGameState> vis;
 	
 	public GameState(int numPlayers, int boardSize, TerrainMap map, MoveReporter reporter) {
 		this.numPlayers = numPlayers;
@@ -18,11 +19,7 @@ public class GameState {
 	}
 	
 	public void setUpForVisualisation(EventBasedFrameVisualiser<VisualGameState> vis) {
-		
-	}
-	
-	public boolean isGameOver() {
-		return false;
+		this.vis = vis;
 	}
 	
 	// This should be able to be called on already dead players.
