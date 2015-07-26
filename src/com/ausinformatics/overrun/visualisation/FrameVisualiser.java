@@ -11,19 +11,19 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
 
+import com.ausinformatics.overrun.Unit;
 import com.ausinformatics.phais.core.visualisation.EndGameEvent;
 import com.ausinformatics.phais.core.visualisation.EndTurnEvent;
 import com.ausinformatics.phais.core.visualisation.FrameVisualisationHandler;
 import com.ausinformatics.phais.core.visualisation.VisualGameEvent;
+import com.ausinformatics.phais.utils.Position;
 
 public class FrameVisualiser implements FrameVisualisationHandler<VisualGameState>{
     private boolean render;
     private static final int LARGE_BORDER = 10;
     private static final int SMALL_BORDER = 3;
     private final int CREATED_FRAMES = 1;
-    private final int MOVED_FRAMES = 5;
-    private final int FOUGHT_FRAMES = 1;
-    private final int KILLED_FRAMES = 1;
+    private final int UPDATED_FRAMES = 5;
     private final int MONEY_DELTA_FRAMES = 1;
     private Box boardBox;
     private Box statsBox;
@@ -115,47 +115,27 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
     }
 
     @Override
-    public void generateState(VisualGameState state, int sWidth, int sHeight, Graphics2D globalGraphics) {
+    public void generateState(VisualGameState state, int sWidth, int sHeight, Graphics2D g) {
         // Ignore the g here. We're hijacking; keep our own sheet.
         if (!render)
             return;
-        stateImage = new BufferedImage(sWidth,
-                                       sHeight,
-                                       BufferedImage.TYPE_4BYTE_ABGR);
-        Graphics2D g = (Graphics2D) stateImage.getGraphics();
-        g.dispose();
+        pulseCounter++;
     }
 
     @Override
     public void animateEvents(VisualGameState state, List<VisualGameEvent> events, int sWidth, int sHeight, Graphics2D g) {
-        pulseCounter++;
-        Image pulseImage = new BufferedImage(sWidth,
-                                             sHeight,
-                                             BufferedImage.TYPE_4BYTE_ABGR);
-        g.drawImage(pulseImage, 0 /* x */, 0 /* y */, null /* observer */);
-        g.drawImage(stateImage, 0 /* x */, 0 /* y */, null /* observer */);
-        stateImage.flush();
-        stateImage = null;
-        /* Now draw the animation events directly onto the Graphics object */
     }
 
     @Override
     public void eventCreated(VisualGameEvent e) {
         if (e instanceof UnitCreatedEvent) {
             e.totalFrames = CREATED_FRAMES;
-        } else if (e instanceof UnitMovedEvent) {
-            e.totalFrames = MOVED_FRAMES;
-        } else if (e instanceof UnitFoughtEvent) {
-            e.totalFrames = FOUGHT_FRAMES;
-        } else if (e instanceof UnitKilledEvent) {
-            e.totalFrames = KILLED_FRAMES;
+        } else if (e instanceof UnitUpdatedEvent) {
+            e.totalFrames = UPDATED_FRAMES;
         } else if (e instanceof MoneyDeltaEvent) {
             e.totalFrames = MONEY_DELTA_FRAMES;
         } else if (e instanceof EndTurnEvent) {
-            e.totalFrames = Math.max(CREATED_FRAMES,
-                                     Math.max(MOVED_FRAMES,
-                                              Math.max(KILLED_FRAMES,
-                                                       MONEY_DELTA_FRAMES)));
+            e.totalFrames = Math.max(CREATED_FRAMES, UPDATED_FRAMES);
         } else if (e instanceof EndGameEvent) {
             e.totalFrames = 60;
         }
@@ -163,8 +143,20 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 
     @Override
     public void eventEnded(VisualGameEvent e, VisualGameState state) {
-        // TODO Auto-generated method stub
-
+        if (e instanceof UnitCreatedEvent) {
+            UnitCreatedEvent ev = (UnitCreatedEvent) e;
+            state.units.get(ev.player).add(new Unit(ev.player,
+                                                    ev.unitId,
+                                                    ev.strength,
+                                                    ev.p));
+        } else if (e instanceof UnitUpdatedEvent) {
+            UnitUpdatedEvent ev = (UnitCreatedEvent) e;
+            state.units.get(ev.player).add(new Unit(ev.player,
+                                                    ev.unitId,
+                                                    ev.currStrength,
+                                                    ev.start.move(ev.dir)));
+        } else if (e instanceof MoneyDeltaEvent) {
+        }
     }
 
     private Font getLargestFittingFont(Font f, Box b, Graphics2D g, String s, int largestSize) {
@@ -182,6 +174,27 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
             }
         }
         return f.deriveFont(minSize);
+    }
+
+    private void tweenMovement(BoxFactory f, Position from, Position to, int amo, Graphics2D g) {
+        int boxSize = boardBoxes[0][0].width;
+        int borderIn = boxSize / 4;
+        Box b1 = boardBoxes[from.r + 1][from.c + 1];
+        Box b2 = boardBoxes[to.r + 1][to.c + 1];
+        Box b3 = f.fromPoints(Math.min(b1.left, b2.left), Math.min(b1.top, b2.top), Math.max(b1.right, b2.right),
+                Math.max(b1.bottom, b2.bottom));
+        Box b = f.fromPoints(b3.left + borderIn, b3.top + borderIn, b3.right + borderIn, b3.bottom + borderIn);
+        int amoDiff = (amo * boxSize / UPDATED_FRAMES);
+        if (from.c < to.c) {
+            b = f.fromDimensions(b.left + amoDiff, b.top, b.width - amoDiff, b.height);
+        } else if (from.c > to.c) {
+            b = f.fromDimensions(b.left, b.top, b.width - amoDiff, b.height);
+        } else if (from.r < to.r) {
+            b = f.fromDimensions(b.left, b.top + amoDiff, b.width, b.height - amoDiff);
+        } else {
+            b = f.fromDimensions(b.left, b.top, b.width, b.height - amoDiff);
+        }
+        b.fill(g);
     }
 
 }
