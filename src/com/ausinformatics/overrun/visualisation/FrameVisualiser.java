@@ -10,12 +10,16 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.List;
 
-import com.ausinformatics.overrun.TerrainMap;
-import com.ausinformatics.overrun.Unit;
 import com.ausinformatics.phais.core.visualisation.EndTurnEvent;
 import com.ausinformatics.phais.core.visualisation.FrameVisualisationHandler;
 import com.ausinformatics.phais.core.visualisation.VisualGameEvent;
 import com.ausinformatics.phais.utils.Position;
+import com.ausinformatics.phais.utils.VisualisationUtils;
+import com.ausinformatics.phais.utils.VisualisationUtils.BoxFactory;
+import com.ausinformatics.phais.utils.VisualisationUtils.Box;
+
+import com.ausinformatics.overrun.TerrainMap;
+import com.ausinformatics.overrun.Unit;
 
 public class FrameVisualiser implements FrameVisualisationHandler<VisualGameState>{
     private boolean render;
@@ -98,7 +102,7 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
                 } else if (lwall < 0) {
                     g.setColor(state.colours[-lwall - 1]);
                 } else {
-                	g.setColor(Color.WHITE);
+                    g.setColor(Color.WHITE);
                 }
                 boardBoxes[y][x].fill(g);
             }
@@ -163,9 +167,9 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 
     @Override
     public void animateEvents(VisualGameState state, List<VisualGameEvent> events, int sWidth, int sHeight, Graphics2D g) {
-    	if (!render || render) {
-    		return;
-    	}
+        if (!render || render) {
+            return;
+        }
         BoxFactory f = new BoxFactory(sWidth, sHeight);
         for (VisualGameEvent ev : events) {
             if (ev instanceof UnitUpdatedEvent) {
@@ -186,7 +190,7 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         if (state.winner != null) {
             g.setColor(Color.black);
             winnerScreen.fill(g);
-            drawString(g, winnerScreen, state.winner, Color.WHITE);
+            VisualisationUtils.drawString(g, winnerScreen, rootFont, state.winner, Color.WHITE);
         }
     }
 
@@ -228,34 +232,6 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         } else if (e instanceof EndGameEvent) {
             state.winner = ((EndGameEvent) e).winnerName;
         }
-    }
-
-    private void drawString(Graphics2D g, Box b, String text, Color c) {
-        Font fo = getLargestFittingFont(rootFont, b, g, text, 180);
-        g.setStroke(new BasicStroke(1));
-        FontMetrics fm = g.getFontMetrics(fo);
-        Rectangle2D fR = fm.getStringBounds(text, g);
-        g.setFont(fo);
-        g.setColor(c);
-        g.drawString(text, b.left + (b.width - (int) fR.getWidth()) / 2,
-                b.top + (b.height + (int) (0.5 * fR.getHeight())) / 2);
-    }
-
-    private Font getLargestFittingFont(Font f, Box b, Graphics2D g, String s, int largestSize) {
-        int minSize = 1;
-        int maxSize = largestSize;
-        while (minSize < maxSize) {
-            int midSize = (minSize + maxSize) / 2;
-            f = f.deriveFont(Font.PLAIN, midSize);
-            FontMetrics fm = g.getFontMetrics(f);
-            Rectangle2D fR = fm.getStringBounds(s, g);
-            if (fR.getWidth() < b.width - 20 && fR.getHeight() < b.height) {
-                minSize = midSize + 1;
-            } else {
-                maxSize = midSize - 1;
-            }
-        }
-        return f.deriveFont(minSize);
     }
 
     private void tweenUpdateEvent(VisualGameState state, BoxFactory f, UnitUpdatedEvent event, Graphics2D g) {
