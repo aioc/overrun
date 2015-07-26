@@ -27,10 +27,10 @@ int blah[100][100];
 int myID;
 
 int numPlayers;
-player players[MAX_PLAYERS];
+player players[MAX_PLAYER_ID];
 
 void clientInit(int playerCount, int boardSize, int playerID) {
-	for (int i = 0; i < MAX_PLAYERS; i++) {
+	for (int i = 0; i < MAX_PLAYER_ID; i++) {
 		players[i].pid = -1;
 	}
 	myID = playerID;
@@ -38,19 +38,19 @@ void clientInit(int playerCount, int boardSize, int playerID) {
 
 void clientDoTurn() {
 	// for each possible player
-	for (int i = 0; i < MAX_PLAYERS; i++) {
+	for (int i = 0; i < MAX_PLAYER_ID; i++) {
 		// if it is ours
 		if (players[i].pid == myID) {
 			// try to move it randomly
 			// might want to add check to see if the given unit is dead or not
-			move(i, rand() % 4);
+			move(i, rand() % 5);
 		}
 	}
 	if (resources != 0) {
 		build(resources);
 	}
 	numPlayers = 0;
-	for (int i = 0; i < MAX_PLAYERS; i++) {
+	for (int i = 0; i < MAX_PLAYER_ID; i++) {
 		players[i].pid = -1;
 	}
 }

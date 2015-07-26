@@ -136,7 +136,7 @@ namespace handlers {
 
 bool error(const string& args) {
   util::err("Server sent an error: " + args);
-  return false;
+  return true;
 }
 
 bool name(const string& args) {
@@ -173,7 +173,7 @@ bool new_game(const string& args) {
 
 bool gameover(const string& args) {
   printf("Game over: %s\n", args.c_str());
-  return false;  // End the game.
+  return true;  // End the game.
 }
 
 bool update_cell(const string& args) {
@@ -254,6 +254,7 @@ bool update_unit(const string& args) {
     } else {
       // Unit alive.
       auto* unit = &state.units[id];
+      unit->id = id;
       unit->x = x;
       unit->y = y;
       unit->level = level;
@@ -299,7 +300,7 @@ bool user_turn(const string& args) {
   state.buffer_moves.clear();
   state.buffer_builds.clear();
 
-  return !net::sendline(builder.str());
+  return net::sendline(builder.str());
 }
 
 }  // namespace handlers
@@ -401,6 +402,8 @@ void mainLoop(void) {
     if (it != commands.end()) {
       if (!it->second(args)) {
         // Encountered an error -- disconnect.
+        fprintf(stderr, "Error: Failed to process command %s\n",
+            command.c_str());
         break;
       }
     } else {
