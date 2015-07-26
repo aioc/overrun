@@ -1,10 +1,6 @@
 #ifndef __PHAIS_H
 #define __PHAIS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include <math.h>
    /////////////////////////////////////////////////////////////////////
    // The following are constants for possible terrain components
 #define WALL                (-99)
@@ -89,6 +85,7 @@ extern "C" {
     *   This will send to the server what you want your name to be.
     */
    void setName(const char* name, int r, int g, int b);
+   inline void setName(const char* name) { setName(name, 255, 0, 255); }
 
    /*
     *   Sends a move to the server. You specify the move by giving it the unit id (this is the same as
@@ -116,9 +113,5 @@ extern "C" {
    int getLevel (int cost);
 
    /////////////////////////////////////////////////////////////////////
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
