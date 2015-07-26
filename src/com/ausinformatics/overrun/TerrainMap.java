@@ -57,6 +57,7 @@ public class TerrainMap {
 		this.otherWeight = otherWeight;
 
 		bases = new Point[numPlayers];
+		genMap();
 	}
 
 	/**
@@ -305,7 +306,7 @@ public class TerrainMap {
 	 * 
 	 * @return the map that has been generated
 	 */
-	public void genMap() {
+	private void genMap() {
 		boolean[][] seen = new boolean[boardsize][boardsize];
 		long orS = seed;
 		do {

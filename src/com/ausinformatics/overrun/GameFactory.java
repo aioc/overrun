@@ -14,12 +14,19 @@ import com.ausinformatics.phais.core.visualisation.EventBasedFrameVisualiser;
 
 public class GameFactory implements GameBuilder {
 	
+	private TerrainMapFactory mapFactory;
+	public int boardSize = 30;
+	
+	public GameFactory(TerrainMapFactory mapFactory) {
+		this.mapFactory = mapFactory;
+	}
+	
 	@Override
 	public GameInstance createGameInstance(List<PersistentPlayer> players) {
 		Collections.shuffle(players);
 		for (int i = 0; i < players.size(); i++) {
 			PersistentPlayer p = players.get(i);
-			String toSend = "NEWGAME " + players.size(); // TODO: Do the rest here.
+			String toSend = "NEWGAME " + players.size() + " " + boardSize + " " + i;
 			p.getConnection().sendInfo(toSend);
 			try {
 				String inputString = p.getConnection().getStrInput();
@@ -35,12 +42,12 @@ public class GameFactory implements GameBuilder {
 				p.getConnection().disconnect();
 			}
 		}
-		GameRunner gr = new GameRunner();
+		GameRunner gr = new GameRunner(players, boardSize, mapFactory.fromDefaultParams(players.size(), boardSize));
 		FrameVisualiser fv = new FrameVisualiser();
 		EventBasedFrameVisualiser<VisualGameState> vis = new EventBasedFrameVisualiser<VisualGameState>(gr, fv,
 				new VisualGameState()); // TODO: Fix up this stuff.
 
-		//gr.setEventVisualiser(vis);
+		gr.setEventVisualiser(vis);
 		return vis;
 	}
 
