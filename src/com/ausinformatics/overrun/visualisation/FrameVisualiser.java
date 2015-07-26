@@ -8,6 +8,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.ausinformatics.phais.core.visualisation.EndTurnEvent;
@@ -17,7 +18,6 @@ import com.ausinformatics.phais.utils.Position;
 import com.ausinformatics.phais.utils.VisualisationUtils;
 import com.ausinformatics.phais.utils.VisualisationUtils.BoxFactory;
 import com.ausinformatics.phais.utils.VisualisationUtils.Box;
-
 import com.ausinformatics.overrun.TerrainMap;
 import com.ausinformatics.overrun.Unit;
 
@@ -167,14 +167,17 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 
     @Override
     public void animateEvents(VisualGameState state, List<VisualGameEvent> events, int sWidth, int sHeight, Graphics2D g) {
-        if (!render || render) {
+        if (!render) {
             return;
         }
         BoxFactory f = new BoxFactory(sWidth, sHeight);
         for (VisualGameEvent ev : events) {
             if (ev instanceof UnitUpdatedEvent) {
                 UnitUpdatedEvent e = (UnitUpdatedEvent) ev;
-                List<Unit> units = state.units.get(e.player);
+                List<Unit> units = new ArrayList<Unit>();
+                for (Unit u : state.units.get(e.player)) {
+                    units.add(u.clone());
+                }
                 for (Unit u : units) {
                     if (u.myId == e.unitId)
                         state.units.get(e.player).remove(u);
