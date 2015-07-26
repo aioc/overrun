@@ -12,4 +12,5 @@ public class MoveReporter {
 	public void sendForPlayer(int id, ClientConnection connection) {
 		
 	}
+	
 }

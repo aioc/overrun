@@ -280,7 +280,7 @@ public class TerrainMap {
 	 *            the seen array to adhere to
 	 * @return
 	 */
-	public int dfs(int x, int y, boolean seen[][]) {
+	private int dfs(int x, int y, boolean seen[][]) {
 		// TODO: lukeha Rewrite as dfs.
 		seen[y][x] = true;
 		int count = 0;

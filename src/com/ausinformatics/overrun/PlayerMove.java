@@ -1,39 +1,23 @@
 package com.ausinformatics.overrun;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ausinformatics.phais.core.server.ClientConnection;
 import com.ausinformatics.phais.core.server.DisconnectedException;
 
 public class PlayerMove {
 
-	private Map<Integer, UnitMove> unitMoves;
-	private int buildLevel;
+	public List<UnitMove> unitMoves;
+	public int buildCost;
 
 	public PlayerMove() {
-		buildLevel = 0;
-		unitMoves = new HashMap<Integer, UnitMove>();
+		buildCost = 0;
+		unitMoves = new ArrayList<UnitMove>();
 	}
 
 	public void addUnitMove(UnitMove move) {
-		unitMoves.put(move.id, move);
-	}
-
-	public void setBuildLevel(int buildLevel) {
-		this.buildLevel = buildLevel;
-	}
-
-	public UnitMove getMoveForUnitId(int id) {
-		if (unitMoves.containsKey(id)) {
-			return unitMoves.get(id);
-		} else {
-			return new UnitMove(id, UnitMove.NO_MOVE);
-		}
-	}
-
-	public int getBuildLevel() {
-		return buildLevel;
+		unitMoves.add(move);
 	}
 
 	public static PlayerMove readPlayerMove(ClientConnection c) throws BadProtocolException, DisconnectedException {
@@ -48,7 +32,7 @@ public class PlayerMove {
 		} else if (!tokens[0].equals("MOVE")) {
 			throw new BadProtocolException("Getting action: Invalid identifier (got " + inputString + ")");
 		}
-		finalMove.setBuildLevel(readInt(tokens[1], inputString));
+		finalMove.buildCost = readInt(tokens[1], inputString);
 		int totalMoves = readInt(tokens[2], inputString);
 		if (totalMoves * 2 != tokens.length - 3) {
 			throw new BadProtocolException("Getting action: Not enough moves for what is specified (got " + inputString

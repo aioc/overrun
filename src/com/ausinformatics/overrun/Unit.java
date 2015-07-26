@@ -15,10 +15,6 @@ public class Unit {
 		this.p = p;
 	}
 	
-	public void changePosition(int dir) {
-		p = p.move(dir);
-	}
-	
 	public boolean isAlive() {
 		return stength > 0;
 	}
