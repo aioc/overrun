@@ -21,8 +21,9 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
     private static final int LARGE_BORDER = 10;
     private static final int SMALL_BORDER = 3;
     private final int CREATED_FRAMES = 1;
-    private final int KILLED_FRAMES = 1;
     private final int MOVED_FRAMES = 5;
+    private final int FOUGHT_FRAMES = 1;
+    private final int KILLED_FRAMES = 1;
     private final int MONEY_DELTA_FRAMES = 1;
     private Box boardBox;
     private Box statsBox;
@@ -33,8 +34,7 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
     private Box winnerScreen;
     private Font rootFont;
 
-    private Image stateImage;
-    private Image pulseImage;
+    private int pulseCounter = 0;
 
     @Override
     public void generateBackground(VisualGameState state, int sWidth, int sHeight, Graphics2D g) {
@@ -128,11 +128,13 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 
     @Override
     public void animateEvents(VisualGameState state, List<VisualGameEvent> events, int sWidth, int sHeight, Graphics2D g) {
+        pulseCounter++;
+        Image pulseImage = new BufferedImage(sWidth,
+                                             sHeight,
+                                             BufferedImage.TYPE_4BYTE_ABGR);
         g.drawImage(pulseImage, 0 /* x */, 0 /* y */, null /* observer */);
         g.drawImage(stateImage, 0 /* x */, 0 /* y */, null /* observer */);
-        pulseImage.flush();
         stateImage.flush();
-        pulseImage = null;
         stateImage = null;
         /* Now draw the animation events directly onto the Graphics object */
     }
@@ -143,6 +145,8 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
             e.totalFrames = CREATED_FRAMES;
         } else if (e instanceof UnitMovedEvent) {
             e.totalFrames = MOVED_FRAMES;
+        } else if (e instanceof UnitFoughtEvent) {
+            e.totalFrames = FOUGHT_FRAMES;
         } else if (e instanceof UnitKilledEvent) {
             e.totalFrames = KILLED_FRAMES;
         } else if (e instanceof MoneyDeltaEvent) {
