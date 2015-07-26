@@ -118,6 +118,14 @@ void build(int cost) {
   state.buffer_moves.push_back(builder.str());
 }
 
+int getCost(int level) {
+  return level;
+}
+
+int getLevel(int cost) {
+  return cost;
+}
+
 
 namespace {
 
@@ -256,6 +264,17 @@ bool update_unit(const string& args) {
 }
 
 bool user_turn(const string& args) {
+  // Notify the client of game state.
+  for (size_t i = 0; i < state.money.size(); i++)
+    clientJuiceInfo(i, state.money[i]);
+  for (size_t i = 0; i < state.map.size(); i++)
+    for (size_t k = 0; k < state.map[i].size(); k++)
+      clientTerrainInfo(k, i, state.map[i][k]);
+  for (const auto it : state.units) {
+    const auto& unit = it.second;
+    clientStudentLocation(unit.id.first, unit.id.second, unit.x, unit.y, unit.level);
+  }
+
   state.fsm = State::USER_TURN;
   clientDoTurn();
   state.fsm = State::ILLEGAL;
