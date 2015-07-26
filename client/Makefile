@@ -1,9 +1,23 @@
 CXX = clang++
-CXXFLAGS = -Wall -Werror -O2 -std=c++11
+CXXFLAGS = -Wall -Werror -O2 -std=c++11 -I.
 
-all: client
+CLIENT_BINS = $(patsubst %.cc,%.bin,$(wildcard players/*.cc))
 
-client: client_library.o overrun_example.o
+
+# Single client. Default build rule.
+client: client_library.o players/overrun_example.o
 	$(CXX) $^ -o $@
 
-.PHONY: all
+
+# All clients.
+all: CXXFLAGS=-O2 -std=c++11 -I.  # No -Wall -Werror
+all: $(CLIENT_BINS)
+
+
+%.bin: %.o client_library.o
+	$(CXX) $^ -o $@
+
+clean:
+	rm -f *.o client players/*.o players/*.bin
+
+.PHONY: all clean
