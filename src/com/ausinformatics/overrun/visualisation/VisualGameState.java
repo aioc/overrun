@@ -25,6 +25,8 @@ public class VisualGameState {
     public TerrainMap map;
 
     public VisualGameState(int boardSize, int numPlayers, List<PersistentPlayer> players, TerrainMap m) {
+    	this.numPlayers = numPlayers;
+    	this.boardSize = boardSize;
         names = new String[numPlayers];
         money = new int[numPlayers];
         colours = new Color[numPlayers];

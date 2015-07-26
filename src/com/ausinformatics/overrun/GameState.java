@@ -13,6 +13,7 @@ import com.ausinformatics.phais.utils.Position;
 
 public class GameState {
 
+	private int numPlayers;
 	private int boardSize;
 	private TerrainMap map;
 	private Reporter reporter;
@@ -23,6 +24,7 @@ public class GameState {
 	private ArrayList<ArrayList<Unit>> allUnits;
 
 	public GameState(int numPlayers, int boardSize, TerrainMap map, Reporter reporter) {
+		this.numPlayers = numPlayers;
 		this.boardSize = boardSize;
 		this.map = map;
 		this.reporter = reporter;
@@ -30,14 +32,15 @@ public class GameState {
 		money = new int[numPlayers];
 		curUnitId = new int[numPlayers];
 		allUnits = new ArrayList<ArrayList<Unit>>();
-		for (int i = 0; i < numPlayers; i++) {
-			allUnits.add(new ArrayList<Unit>());
-			createUnit(i, 1);
-		}
+		
 	}
 
 	public void setUpForVisualisation(EventBasedFrameVisualiser<VisualGameState> vis) {
 		this.reporter = new CopyingReporter(reporter, new VisualReporter(vis));
+		for (int i = 0; i < numPlayers; i++) {
+			allUnits.add(new ArrayList<Unit>());
+			createUnit(i, 1);
+		}
 	}
 
 	// This should be able to be called on already dead players.

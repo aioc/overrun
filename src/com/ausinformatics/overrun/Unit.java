@@ -22,4 +22,8 @@ public class Unit {
 	public Unit clone() {
 		return new Unit(strength, myId, ownerId, p.clone());
 	}
+	
+	public String toString() {
+		return ownerId + " " + myId + " " + p.r + " " + p.c + " " + strength;
+	}
 }

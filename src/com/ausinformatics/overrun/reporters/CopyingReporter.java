@@ -20,24 +20,28 @@ public class CopyingReporter implements Reporter {
 	
 	@Override
 	public void squareUpdated(Position p, int newVal) {
+		System.out.println("SU " + p.r + " " + p.c + " " + newVal);
 		r1.squareUpdated(p, newVal);
 		r2.squareUpdated(p, newVal);
 	}
 
 	@Override
 	public void personMoneyChange(int id, int amount) {
+		System.out.println("MC " + id + " " + amount);
 		r1.personMoneyChange(id, amount);
 		r2.personMoneyChange(id, amount);
 	}
 
 	@Override
 	public void unitCreated(Unit u) {
+		System.out.println("UC " + u);
 		r1.unitCreated(u);
 		r2.unitCreated(u);
 	}
 
 	@Override
 	public void unitUpdated(Unit oldU, Unit newU) {
+		System.out.println("UU " + oldU + " " + newU);
 		r1.unitUpdated(oldU, newU);
 		r2.unitUpdated(oldU, newU);
 	}

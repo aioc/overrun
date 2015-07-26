@@ -67,7 +67,7 @@ public class PlayerConnectionReporter implements Reporter {
 		String unitString = "LOCATION " + updates.size();
 		for (Pair<Unit, Unit> up : updates) {
 			Unit u = up.second;
-			unitString += " " + u.ownerId + " " + u.myId + " " + u.p.r + " " + u.p.c + " " + u.strength;
+			unitString += " " + u;
 		}
 		c.sendInfo(unitString);
 		errors.clear();

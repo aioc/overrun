@@ -8,9 +8,9 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
+import com.ausinformatics.overrun.TerrainMap;
 import com.ausinformatics.overrun.Unit;
 import com.ausinformatics.phais.core.visualisation.EndTurnEvent;
 import com.ausinformatics.phais.core.visualisation.FrameVisualisationHandler;
@@ -93,10 +93,10 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         for (int y = 0; y < state.boardSize; y++) {
             for (int x = 0; x < state.boardSize; x++) {
                 int lwall = state.map.getTerrain(x, y);
-                if (lwall < 0) {
-                    g.setColor(state.colours[-lwall - 1]);
-                } else if (lwall == 0) {
+                if (lwall == TerrainMap.WALL) {
                     g.setColor(Color.black);
+                } else if (lwall < 0) {
+                    g.setColor(state.colours[-lwall - 1]);
                 }
                 boardBoxes[y][x].fill(g);
             }
