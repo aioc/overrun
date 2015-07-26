@@ -46,7 +46,7 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         // Board takes at most 2/3rds of the width.
         int boardWidth = 2 * (width - LARGE_BORDER) / 3;
         int boardSize = Math.min(height, boardWidth);
-        int boardN = state.boardSize + 2;
+        int boardN = state.boardSize;
         if (boardSize < 5 * boardN) {
             return;
         }
@@ -94,9 +94,11 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
             for (int x = 0; x < state.boardSize; x++) {
                 int lwall = state.map.getTerrain(x, y);
                 if (lwall == TerrainMap.WALL) {
-                    g.setColor(Color.black);
+                    g.setColor(Color.BLACK);
                 } else if (lwall < 0) {
                     g.setColor(state.colours[-lwall - 1]);
+                } else {
+                	g.setColor(Color.WHITE);
                 }
                 boardBoxes[y][x].fill(g);
             }
@@ -126,8 +128,9 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 
     @Override
     public void generateState(VisualGameState state, int sWidth, int sHeight, Graphics2D g) {
-        if (!render)
+        if (!render) {
             return;
+        }
 
         pulseCounter++;
         for (int y = 0; y < state.boardSize; y++) {
@@ -140,8 +143,8 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
                             Color.getHSBColor((System.currentTimeMillis()%2000)/2000f,0.2f,0.4f),
                             colorMul);
                     g.setColor(interiorColor);
+                    boardBoxes[y][x].fill(g);
                 }
-                boardBoxes[y][x].fill(g);
             }
         }
 
@@ -160,6 +163,9 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 
     @Override
     public void animateEvents(VisualGameState state, List<VisualGameEvent> events, int sWidth, int sHeight, Graphics2D g) {
+    	if (!render || render) {
+    		return;
+    	}
         BoxFactory f = new BoxFactory(sWidth, sHeight);
         for (VisualGameEvent ev : events) {
             if (ev instanceof UnitUpdatedEvent) {
