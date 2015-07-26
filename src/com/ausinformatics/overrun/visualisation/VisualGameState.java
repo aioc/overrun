@@ -50,6 +50,7 @@ public class VisualGameState {
     }
 
     public void mineSquare(Position p) {
+        map.setTerrain(p.c, p.r, map.getTerrain(p.c, p.r) - 1);
     }
 
     private double colourDistance(Color c1, Color c2) {

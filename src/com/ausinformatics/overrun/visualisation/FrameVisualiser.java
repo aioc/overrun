@@ -1,18 +1,17 @@
 package com.ausinformatics.overrun.visualisation;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.ausinformatics.overrun.Unit;
-import com.ausinformatics.phais.core.visualisation.EndGameEvent;
 import com.ausinformatics.phais.core.visualisation.EndTurnEvent;
 import com.ausinformatics.phais.core.visualisation.FrameVisualisationHandler;
 import com.ausinformatics.phais.core.visualisation.VisualGameEvent;
@@ -91,16 +90,16 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         render = true;
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, sWidth, sHeight);
-        for (int i = 0; i < boardN; i++) {
-            for (int j = 0; j < boardN; j++) {
-                if (i == 0 || j == 0 || i == boardN - 1 || j == boardN - 1) {
-                    g.setColor(Color.BLACK);
-                } else {
-                    g.setColor(Color.WHITE);
-                }
-                boardBoxes[i][j].fill(g);
-            }
-        }
+        //for (int i = 0; i < boardN; i++) {
+        //    for (int j = 0; j < boardN; j++) {
+        //        if (i == 0 || j == 0 || i == boardN - 1 || j == boardN - 1) {
+        //            g.setColor(Color.BLACK);
+        //        } else {
+        //            g.setColor(Color.WHITE);
+        //        }
+        //        boardBoxes[i][j].fill(g);
+        //    }
+        //}
         g.setColor(Color.LIGHT_GRAY);
         titleBox.fill(g);
         for (int i = 0; i < state.numPlayers; i++) {
@@ -119,10 +118,63 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         if (!render)
             return;
         pulseCounter++;
+
+        for (int y = 0; y < state.boardSize; y++) {
+            for (int x = 0; x < state.boardSize; x++) {
+                int lwall = state.map.getTerrain(x, y);
+                // TODO move the static shit into generateBackground
+                if (lwall < 0) {
+                    g.setColor(state.colours[-lwall - 1]);
+                } else if (lwall == 0) {
+                    g.setColor(Color.black);
+                } else {
+                    float colorMul = ((float) lwall)/50;
+                    colorMul = Math.min(1, colorMul);
+                    Color interiorColor = avColor(Color.white,
+                            Color.getHSBColor((System.currentTimeMillis()%2000)/2000f,0.2f,0.4f),
+                            colorMul);
+                    g.setColor(interiorColor);
+                }
+                boardBoxes[y][x].fill(g);
+            }
+        }
+
+        for (int i = 0; i < state.numPlayers; i++) {
+            for (int j = 0, len = state.units.get(i).size(); j < len; j++) {
+                Unit u = state.units.get(i).get(j);
+                float colorMul = ((float) u.strength)/100;
+
+                colorMul = Math.min(1, colorMul); // in range [0,1]
+                colorMul = (float) (0.3 + 0.7*colorMul);
+
+                g.setColor(avColor(Color.gray, state.colours[i], colorMul));
+                Box box = boardBoxes[u.p.r][u.p.c];
+                g.fillOval(box.left, box.top, box.width, box.height);
+                g.setColor(avColor(Color.black, state.colours[i], 0.5f));
+                g.drawOval(box.left, box.top, box.width, box.height);
+            }
+        }
+
     }
 
     @Override
     public void animateEvents(VisualGameState state, List<VisualGameEvent> events, int sWidth, int sHeight, Graphics2D g) {
+        for (VisualGameEvent ev : events) {
+            if (ev instanceof UnitUpdatedEvent) {
+                UnitUpdatedEvent e = (UnitUpdatedEvent) ev;
+                List<Unit> units = state.units.get(e.player);
+                for (Unit u : units) {
+                    if (u.myId == e.unitId)
+                        state.units.get(e.player).remove(u);
+                }
+                /* Tween on currentStrength */
+            }
+        }
+        if (state.winner != null) {
+            g.setColor(Color.black);
+            winnerScreen.fill(g);
+            drawString(g, winnerScreen, state.winner, Color.WHITE);
+        }
     }
 
     @Override
@@ -160,7 +212,20 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
             for (Position pos : ev.minedBlocks) {
                 state.mineSquare(pos);
             }
+        } else if (e instanceof EndGameEvent) {
+            state.winner = ((EndGameEvent) e).winnerName;
         }
+    }
+
+    private void drawString(Graphics2D g, Box b, String text, Color c) {
+        Font fo = getLargestFittingFont(rootFont, b, g, text, 180);
+        g.setStroke(new BasicStroke(1));
+        FontMetrics fm = g.getFontMetrics(fo);
+        Rectangle2D fR = fm.getStringBounds(text, g);
+        g.setFont(fo);
+        g.setColor(c);
+        g.drawString(text, b.left + (b.width - (int) fR.getWidth()) / 2,
+                b.top + (b.height + (int) (0.5 * fR.getHeight())) / 2);
     }
 
     private Font getLargestFittingFont(Font f, Box b, Graphics2D g, String s, int largestSize) {
@@ -201,4 +266,22 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         b.fill(g);
     }
 
+    private Color avColor(float r1, float g1, float b1, float r2, float g2, float b2, float colorMul) {
+        float redVal = (r1 * (1-colorMul) + r2 * colorMul);
+        float greenVal = (g1 * (1-colorMul) + g2 * colorMul);
+        float blueVal = (b1 * (1-colorMul) + b2 * colorMul);
+        return new Color(redVal,greenVal,blueVal);
+    }
+
+    private Color avColor(Color c1, Color c2, float colorMul) {
+        return avColor(
+                c1.getRed()/255f,
+                c1.getGreen()/255f,
+                c1.getBlue()/255f,
+                c2.getRed()/255f,
+                c2.getGreen()/255f,
+                c2.getBlue()/255f,
+                colorMul
+                );
+    }
 }
