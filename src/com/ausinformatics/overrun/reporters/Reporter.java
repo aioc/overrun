@@ -7,7 +7,7 @@ public interface Reporter {
 
 	public void sendError(int id, String error);
 
-	public void squareUpdated(Position p, int newVal);
+	public void squareUpdated(Position p, int oldVal, int newVal);
 	
 	public void personMoneyChange(int id, int amount);
 	

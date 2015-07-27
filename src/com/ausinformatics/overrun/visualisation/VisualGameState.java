@@ -1,15 +1,16 @@
 package com.ausinformatics.overrun.visualisation;
 
 import java.awt.Color;
+import java.util.HashMap;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
 import java.util.Random;
 
-import com.ausinformatics.phais.core.interfaces.PersistentPlayer;
-import com.ausinformatics.phais.utils.Position;
 import com.ausinformatics.overrun.Player;
-import com.ausinformatics.overrun.Unit;
 import com.ausinformatics.overrun.TerrainMap;
+import com.ausinformatics.overrun.Unit;
+import com.ausinformatics.phais.core.interfaces.PersistentPlayer;
+import com.ausinformatics.phais.utils.Pair;
 
 public class VisualGameState {
 
@@ -21,8 +22,9 @@ public class VisualGameState {
     public Color[] colours;
     public boolean isDead[];
     public String winner;
-    public List<List<Unit>> units;
-    public TerrainMap map;
+    // Playerid, unitid.
+    public Map<Pair<Integer, Integer>, Unit> units;
+    public int[][] tileVals;
 
     public VisualGameState(int boardSize, int numPlayers, List<PersistentPlayer> players, TerrainMap m) {
     	this.numPlayers = numPlayers;
@@ -31,15 +33,19 @@ public class VisualGameState {
         money = new int[numPlayers];
         colours = new Color[numPlayers];
         isDead = new boolean[numPlayers];
-        units = new ArrayList<List<Unit>>();
-        map = m;
+        units = new HashMap<>();
+        tileVals = new int[boardSize][boardSize];
+        for (int i = 0; i < boardSize; i++) {
+        	for (int j = 0; j < boardSize; j++) {
+        		tileVals[i][j] = m.getTerrain(j, i);
+        	}
+        }
 
         for (int i = 0; i < numPlayers; i++) {
             names[i] = players.get(i).getName();
             money[i] = 0;
             colours[i] = new Color(((Player) players.get(i)).getColour());
             isDead[i] = false;
-            units.add(new ArrayList<Unit>());
             for (int j = 0; j < i; j++) {
                 Color original = colours[i];
                 int tries = 0;
@@ -49,10 +55,6 @@ public class VisualGameState {
                 }
             }
         }
-    }
-
-    public void mineSquare(Position p) {
-        map.setTerrain(p.c, p.r, map.getTerrain(p.c, p.r) - 1);
     }
 
     private double colourDistance(Color c1, Color c2) {

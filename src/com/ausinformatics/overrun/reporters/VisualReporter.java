@@ -36,8 +36,10 @@ public class VisualReporter implements Reporter {
 	}
 
 	@Override
-	public void squareUpdated(Position p, int newVal) {
-		minedSquares.add(p);
+	public void squareUpdated(Position p, int oldVal, int newVal) {
+		if (newVal == oldVal - 1) {
+			minedSquares.add(p);
+		}
 	}
 
 	@Override

@@ -56,6 +56,7 @@ void clientDoTurn() {
 }
 
 void clientTerrainInfo(int x, int y, int type) {
+	//printf ("Told about info: %d %d %d\n", x, y, type);
 	if (type > 0){
 		blah[x][y] = 1;
 	} else {
@@ -64,12 +65,14 @@ void clientTerrainInfo(int x, int y, int type) {
 }
 
 void clientJuiceInfo(int pid, int minerals) {
+	//printf ("Told about juice: %d %d\n", pid, minerals);
 	if (pid == myID) {
 		resources = minerals;
 	}
 }
 
 void clientStudentLocation(int pid, int id, int x, int y, int level) {
+	//printf ("Told about unit: %d %d %d %d %d\n", pid, id, y, x, level);
 	// If this is about our own player
 	if (pid == myID) {
 		players[id].pid = pid;

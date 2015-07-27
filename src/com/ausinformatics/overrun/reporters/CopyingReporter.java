@@ -19,10 +19,10 @@ public class CopyingReporter implements Reporter {
 	}
 	
 	@Override
-	public void squareUpdated(Position p, int newVal) {
-		System.out.println("SU " + p.r + " " + p.c + " " + newVal);
-		r1.squareUpdated(p, newVal);
-		r2.squareUpdated(p, newVal);
+	public void squareUpdated(Position p, int oldVal, int newVal) {
+		System.out.println("SU " + p.r + " " + p.c + " " + " " + oldVal + " " + newVal);
+		r1.squareUpdated(p, oldVal, newVal);
+		r2.squareUpdated(p, oldVal, newVal);
 	}
 
 	@Override

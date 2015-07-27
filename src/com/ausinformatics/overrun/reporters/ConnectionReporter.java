@@ -34,9 +34,9 @@ public class ConnectionReporter implements Reporter {
 	}
 
 	@Override
-	public void squareUpdated(Position p, int newVal) {
+	public void squareUpdated(Position p, int oldVal, int newVal) {
 		for (int i = 0; i < numPlayers; i++) {
-			reporters[i].squareUpdated(p, newVal);
+			reporters[i].squareUpdated(p, oldVal, newVal);
 		}
 	}
 

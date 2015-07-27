@@ -41,6 +41,12 @@ public class GameState {
 			allUnits.add(new ArrayList<Unit>());
 			createUnit(i, 1);
 		}
+		for (int i = 0; i < boardSize; i++) {
+			for (int j = 0; j < boardSize; j++) {
+				reporter.squareUpdated(new Position(i, j), map.getTerrain(j, i), map.getTerrain(j, i));
+			}
+		}
+
 	}
 
 	// This should be able to be called on already dead players.
@@ -117,7 +123,7 @@ public class GameState {
 					int res = map.getTerrain(newP.c, newP.r) - 1;
 					map.setTerrain(newP.c, newP.r, res);
 					reporter.personMoneyChange(id, 1);
-					reporter.squareUpdated(newP, res);
+					reporter.squareUpdated(newP, res + 1, res);
 				} else {
 					reporter.sendError(id, "You tried to extract from an empty square. id: " + u.id);
 				}

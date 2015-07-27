@@ -29,7 +29,7 @@ public class PlayerConnectionReporter implements Reporter {
 	}
 
 	@Override
-	public void squareUpdated(Position p, int newVal) {
+	public void squareUpdated(Position p, int oldVal, int newVal) {
 		squareUpdates.put(new Pair<Integer, Integer>(p.r, p.c), newVal);
 	}
 
