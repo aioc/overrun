@@ -24,7 +24,7 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 		private static final int LARGE_BORDER = 10;
 		private static final int SMALL_BORDER = 3;
 		private final int CREATED_FRAMES = 1;
-		private final int UPDATED_FRAMES = 5;
+		private final int UPDATED_FRAMES = 1;
 		private final int MONEY_DELTA_FRAMES = 1;
 		private Box boardBox;
 		private Box statsBox;
@@ -141,14 +141,6 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 				}
 			}
 
-			for (Entry<Pair<Integer, Integer>, Unit> entry : state.units.entrySet()) {
-				Unit u = entry.getValue();
-				g.setColor(getUnitFillColour(u, state.colours[u.ownerId]));
-				Box box = boardBoxes[u.p.r][u.p.c];
-				g.fillOval(box.left, box.top, box.width, box.height);
-				g.setColor(getUnitOutlineColour(u, state.colours[u.ownerId]));
-				g.drawOval(box.left, box.top, box.width, box.height);
-			}
 		}
 
 		@Override
@@ -169,6 +161,15 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 				} else if (ev instanceof MoneyDeltaEvent) {
 						// Update the player's money
 				}
+			}
+
+			for (Entry<Pair<Integer, Integer>, Unit> entry : state.units.entrySet()) {
+				Unit u = entry.getValue();
+				g.setColor(getUnitFillColour(u, state.colours[u.ownerId]));
+				Box box = boardBoxes[u.p.r][u.p.c];
+				g.fillOval(box.left, box.top, box.width, box.height);
+				g.setColor(getUnitOutlineColour(u, state.colours[u.ownerId]));
+				g.drawOval(box.left, box.top, box.width, box.height);
 			}
 			if (state.winner != null) {
 				g.setColor(Color.black);
@@ -199,7 +200,9 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 				state.units.put(new Pair<Integer, Integer>(ev.player, ev.unitId), new Unit(ev.strength, ev.unitId, ev.player, ev.p));
 			} else if (e instanceof UnitUpdatedEvent) {
 				UnitUpdatedEvent ev = (UnitUpdatedEvent) e;
-				state.units.put(new Pair<Integer, Integer>(ev.player, ev.unitId), new Unit(ev.currStrength, ev.unitId, ev.player, ev.start.move(ev.dir)));
+				if (ev.currStrength > 0) {
+					state.units.put(new Pair<Integer, Integer>(ev.player, ev.unitId), new Unit(ev.currStrength, ev.unitId, ev.player, ev.start.move(ev.dir)));
+				}
 			} else if (e instanceof MoneyDeltaEvent) {
 				MoneyDeltaEvent ev = (MoneyDeltaEvent) e;
 				state.money[ev.playerId] += ev.moneyDelta;

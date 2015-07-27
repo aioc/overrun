@@ -405,7 +405,7 @@ void reset (void) {
 
 void clientRegister() {
    // We need to call setName ()
-   setName ("Skynet");
+   setName ("Skynet", 0x10, 0x80, 0x90);
 
    // We also want to seed the random generator
    srand (time (NULL));
