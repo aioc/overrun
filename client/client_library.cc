@@ -419,10 +419,12 @@ void connectServer(char *server, int port) {
     exit(EXIT_FAILURE);
   }
 
+#ifndef __APPLE__
   if (setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &yes, sizeof(yes)) < 0) {
     fprintf(stderr, "Error: could not turn quickack on. This is bad\n");
     exit(EXIT_FAILURE);
   }
+#endif
 
   // Initialise remote address
   struct sockaddr_in serv_addr;
