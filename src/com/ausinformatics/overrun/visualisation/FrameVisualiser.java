@@ -53,8 +53,8 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         int width = sWidth - 2 * LARGE_BORDER;
         int height = sHeight - 2 * LARGE_BORDER;
         // Divide into two parts: The board, and the stats.
-        // Board takes at most 2/3rds of the width.
-        int boardWidth = 2 * (width - LARGE_BORDER) / 3;
+        // Board takes at most 4/5rds of the width.
+        int boardWidth = 4 * (width - LARGE_BORDER) / 5;
         int boardSize = Math.min(height, boardWidth);
         int boardN = state.boardSize;
         if (boardSize < 5 * boardN) {
