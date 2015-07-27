@@ -11,16 +11,15 @@ import com.ausinformatics.phais.core.interfaces.PersistentPlayer;
 import com.ausinformatics.phais.core.server.DisconnectedException;
 import com.ausinformatics.phais.core.visualisation.EventBasedFrameVisualiser;
 
-
 public class GameFactory implements GameBuilder {
-	
+
 	private TerrainMapFactory mapFactory;
-	public int boardSize = 30;
-	
+	public int boardSize = 40;
+
 	public GameFactory(TerrainMapFactory mapFactory) {
 		this.mapFactory = mapFactory;
 	}
-	
+
 	@Override
 	public GameInstance createGameInstance(List<PersistentPlayer> players) {
 		Collections.shuffle(players);

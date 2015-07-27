@@ -125,22 +125,6 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 			if (!render) {
 				return;
 			}
-
-			pulseCounter++;
-			for (int y = 0; y < state.boardSize; y++) {
-				for (int x = 0; x < state.boardSize; x++) {
-						int mineralPatch = state.tileVals[y][x];
-						if (mineralPatch > 0) {
-							float colorMul = ((float) mineralPatch) / 50;
-							colorMul = Math.min(1, colorMul);
-							Color interiorColor = avColor(Color.white,
-										Color.getHSBColor((System.currentTimeMillis() % 2000) / 2000f, 0.2f, 0.4f), colorMul);
-							g.setColor(interiorColor);
-							boardBoxes[y][x].fill(g);
-						}
-				}
-			}
-
 		}
 
 		@Override
@@ -148,6 +132,20 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 				Graphics2D g) {
 			if (!render) {
 				return;
+			}
+			pulseCounter += 10;
+			for (int y = 0; y < state.boardSize; y++) {
+				for (int x = 0; x < state.boardSize; x++) {
+						int mineralPatch = state.tileVals[y][x];
+						if (mineralPatch > 0) {
+							float colorMul = ((float) mineralPatch) / 50;
+							colorMul = Math.min(1, colorMul);
+							Color interiorColor = avColor(Color.white,
+										Color.getHSBColor((pulseCounter % 2000) / 2000f, 0.2f, 0.4f), colorMul);
+							g.setColor(interiorColor);
+							boardBoxes[y][x].fill(g);
+						}
+				}
 			}
 			BoxFactory f = new BoxFactory(sWidth, sHeight);
 			for (VisualGameEvent ev : events) {
@@ -197,11 +195,13 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 		public void eventEnded(VisualGameEvent e, VisualGameState state) {
 			if (e instanceof UnitCreatedEvent) {
 				UnitCreatedEvent ev = (UnitCreatedEvent) e;
-				state.units.put(new Pair<Integer, Integer>(ev.player, ev.unitId), new Unit(ev.strength, ev.unitId, ev.player, ev.p));
+				state.units.put(new Pair<Integer, Integer>(ev.player, ev.unitId),
+							new Unit(ev.strength, ev.unitId, ev.player, ev.p));
 			} else if (e instanceof UnitUpdatedEvent) {
 				UnitUpdatedEvent ev = (UnitUpdatedEvent) e;
 				if (ev.currStrength > 0) {
-					state.units.put(new Pair<Integer, Integer>(ev.player, ev.unitId), new Unit(ev.currStrength, ev.unitId, ev.player, ev.start.move(ev.dir)));
+						state.units.put(new Pair<Integer, Integer>(ev.player, ev.unitId),
+								new Unit(ev.currStrength, ev.unitId, ev.player, ev.start.move(ev.dir)));
 				}
 			} else if (e instanceof MoneyDeltaEvent) {
 				MoneyDeltaEvent ev = (MoneyDeltaEvent) e;

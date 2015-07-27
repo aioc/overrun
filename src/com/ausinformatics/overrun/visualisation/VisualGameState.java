@@ -49,7 +49,7 @@ public class VisualGameState {
             for (int j = 0; j < i; j++) {
                 Color original = colours[i];
                 int tries = 0;
-                while (colourDistance(colours[i], colours[j]) < 100 && tries < 10) {
+                while (colourDistance(colours[i], colours[j]) < 250 && tries < 30) {
                     colours[i] = generateRandomColour(original);
                     tries++;
                 }

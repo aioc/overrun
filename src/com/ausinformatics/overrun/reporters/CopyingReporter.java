@@ -6,7 +6,7 @@ import com.ausinformatics.phais.utils.Position;
 public class CopyingReporter implements Reporter {
 
 	private Reporter r1, r2;
-	
+
 	public CopyingReporter(Reporter r1, Reporter r2) {
 		this.r1 = r1;
 		this.r2 = r2;
@@ -17,7 +17,7 @@ public class CopyingReporter implements Reporter {
 		r1.sendError(id, error);
 		r2.sendError(id, error);
 	}
-	
+
 	@Override
 	public void squareUpdated(Position p, int oldVal, int newVal) {
 		r1.squareUpdated(p, oldVal, newVal);
@@ -41,7 +41,7 @@ public class CopyingReporter implements Reporter {
 		r1.unitUpdated(oldU, newU);
 		r2.unitUpdated(oldU, newU);
 	}
-	
+
 	@Override
 	public void endTurn() {
 		r1.endTurn();
