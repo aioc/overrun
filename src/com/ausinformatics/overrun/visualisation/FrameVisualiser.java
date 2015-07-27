@@ -145,7 +145,7 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 
 			VisualisationUtils.drawString(g, moneyBoxes[i], rootFont, "Money:       " + String.format("%5d", state.money[i]), state.colours[i].darker());
 			VisualisationUtils.drawString(g, totalMoneyBoxes[i], rootFont, "Total money: " + String.format("%5d", state.totalMoney[i]), state.colours[i].darker());
-			VisualisationUtils.drawString(g, unitBoxes[i], rootFont, "Units:       " + String.format("%5d", 0), state.colours[i].darker());
+			VisualisationUtils.drawString(g, unitBoxes[i], rootFont, "Units:       " + String.format("%5d", state.unitCount[i]), state.colours[i].darker());
 		}
 	}
 
@@ -223,11 +223,14 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 			UnitCreatedEvent ev = (UnitCreatedEvent) e;
 			state.units.put(new Pair<Integer, Integer>(ev.player, ev.unitId),
 					new Unit(ev.strength, ev.unitId, ev.player, ev.p));
+			state.unitCount[ev.player]++;
 		} else if (e instanceof UnitUpdatedEvent) {
 			UnitUpdatedEvent ev = (UnitUpdatedEvent) e;
 			if (ev.currStrength > 0) {
 				state.units.put(new Pair<Integer, Integer>(ev.player, ev.unitId),
 						new Unit(ev.currStrength, ev.unitId, ev.player, ev.start.move(ev.dir)));
+			} else {
+				state.unitCount[ev.player]--;
 			}
 		} else if (e instanceof MoneyGainEvent) {
 			MoneyGainEvent ev = (MoneyGainEvent) e;

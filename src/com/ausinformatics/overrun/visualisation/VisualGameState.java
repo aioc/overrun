@@ -20,6 +20,7 @@ public class VisualGameState {
 	public String[] names;
 	public int[] money;
 	public int[] totalMoney;
+	public int[] unitCount;
 	public Color[] colours;
 	public boolean isDead[];
 	public String winner;
@@ -34,6 +35,7 @@ public class VisualGameState {
 		names = new String[numPlayers];
 		money = new int[numPlayers];
 		totalMoney = new int[numPlayers];
+		unitCount = new int[numPlayers];
 		colours = new Color[numPlayers];
 		isDead = new boolean[numPlayers];
 		units = new HashMap<>();
@@ -46,7 +48,7 @@ public class VisualGameState {
 
 		for (int i = 0; i < numPlayers; i++) {
 			names[i] = players.get(i).getName();
-			money[i] = 0;
+			money[i] = totalMoney[i] = unitCount[i] = 0;
 			colours[i] = new Color(((Player) players.get(i)).getColour());
 			isDead[i] = false;
 			for (int j = 0; j < i; j++) {
