@@ -109,13 +109,13 @@ void move(int uid, int move) {
 
 void build(int cost) {
   if (state.fsm != State::USER_TURN) {
-    util::err("Called move() but preconditions are not met.");
+    util::err("Called build() but preconditions are not met.");
     return;
   }
 
   std::ostringstream builder;
-  builder << cost << " " << cost;
-  state.buffer_moves.push_back(builder.str());
+  builder << cost;
+  state.buffer_builds.push_back(builder.str());
 }
 
 int getCost(int level) {
@@ -205,10 +205,7 @@ bool update_cell(const string& args) {
 bool update_money(const string& args) {
   std::istringstream builder(args);
 
-  size_t n = 0;
-  builder >> n;
-  for (size_t i = 0; i < n; i++) {
-    int value;
+  for (auto& value : state.money) {
     builder >> value;
 
     if (builder.bad()) {
@@ -220,8 +217,6 @@ bool update_money(const string& args) {
       util::err("update money had bad params");
       return false;
     }
-
-    state.money[i] = value;
   }
 
   return true;
