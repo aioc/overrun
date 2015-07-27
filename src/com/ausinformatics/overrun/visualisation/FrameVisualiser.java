@@ -113,8 +113,8 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         try {
             rootFont = Font.createFont(Font.TRUETYPE_FONT, FrameVisualiser.class.getResourceAsStream("emulogic.ttf"));
         } catch (FontFormatException | IOException e) {
-            System.err.println("Couldn't find the resource \"emulogic.ttf\","
-                    + "you probably misconfigured something when building the"
+            System.err.println("Couldn't find the resource \"emulogic.ttf\", "
+                    + "you probably misconfigured something when building the "
                     + "server");
             rootFont = g.getFont();
         }
@@ -236,28 +236,10 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         Color endColour = getUnitFillColour(endUnit, state.colours[event.player]);
         int amount = event.curFrame;
         g.setColor(avColor(startColour, endColour, amount/event.totalFrames));
-        tweenMovement(f, event.start, event.start.move(event.dir), amount, g);
-    }
-
-    private void tweenMovement(BoxFactory f, Position from, Position to, int amo, Graphics2D g) {
-        int boxSize = boardBoxes[0][0].width;
-        int borderIn = boxSize / 4;
-        Box b1 = boardBoxes[from.r + 1][from.c + 1];
-        Box b2 = boardBoxes[to.r + 1][to.c + 1];
-        Box b3 = f.fromPoints(Math.min(b1.left, b2.left), Math.min(b1.top, b2.top), Math.max(b1.right, b2.right),
-                Math.max(b1.bottom, b2.bottom));
-        Box b = f.fromPoints(b3.left + borderIn, b3.top + borderIn, b3.right + borderIn, b3.bottom + borderIn);
-        int amoDiff = (amo * boxSize / UPDATED_FRAMES);
-        if (from.c < to.c) {
-            b = f.fromDimensions(b.left + amoDiff, b.top, b.width - amoDiff, b.height);
-        } else if (from.c > to.c) {
-            b = f.fromDimensions(b.left, b.top, b.width - amoDiff, b.height);
-        } else if (from.r < to.r) {
-            b = f.fromDimensions(b.left, b.top + amoDiff, b.width, b.height - amoDiff);
-        } else {
-            b = f.fromDimensions(b.left, b.top, b.width, b.height - amoDiff);
-        }
-        b.fill(g);
+        Box tweendItem = VisualisationUtils.tweenMovement(f, boardBoxes,
+                event.start, event.start.move(event.dir),
+                ((double) amount) / UPDATED_FRAMES, 0);
+        g.fillOval(tweendItem.left, tweendItem.top, tweendItem.width, tweendItem.height);
     }
 
     private float getColourMulForUnit(Unit u) {
