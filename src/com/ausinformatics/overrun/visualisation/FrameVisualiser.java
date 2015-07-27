@@ -25,7 +25,7 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 	private static final int LARGE_BORDER = 10;
 	private static final int SMALL_BORDER = 3;
 	private final int CREATED_FRAMES = 1;
-	private final int UPDATED_FRAMES = 1;
+	private final int UPDATED_FRAMES = 5;
 	private final int MONEY_DELTA_FRAMES = 1;
 	private Box boardBox;
 	private Box statsBox;
