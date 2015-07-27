@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
@@ -30,7 +29,7 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
     private final int MONEY_DELTA_FRAMES = 1;
     private Box boardBox;
     private Box statsBox;
-    
+
     private Box[][] boardBoxes;
     private Box titleBox;
     private Box[] playerNameBoxes;
@@ -38,12 +37,11 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
     private Box[] moneyBoxes;
     private Box[] totalMoneyBoxes;
     private Box[] unitBoxes;
-    
+
     private Box winnerScreen;
     private Font rootFont;
 
     private int pulseCounter = 0;
-    private BufferedImage newStateImg;
 
     @Override
     public void generateBackground(VisualGameState state, int sWidth, int sHeight, Graphics2D g) {
@@ -97,7 +95,7 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
                     statsBox.right - SMALL_BORDER, playerHeight - LARGE_BORDER);
             playerNameBoxes[i] = f.fromDimensions(b.left, b.top, b.width, b.height / 4);
             statBoxes[i] = f.fromMixedWidth(b.left, playerNameBoxes[i].bottom + LARGE_BORDER, b.width, b.bottom);
-            
+
             moneyBoxes[i] = f.fromDimensions(b.left, statBoxes[i].top, b.width, statBoxes[i].height / 3);
             totalMoneyBoxes[i] = f.fromDimensions(b.left, moneyBoxes[i].bottom, b.width, statBoxes[i].height / 3);
             unitBoxes[i] = f.fromDimensions(b.left, totalMoneyBoxes[i].bottom, b.width, statBoxes[i].height / 3);
@@ -140,14 +138,17 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
         if (!render) {
             return;
         }
-        String text = "Overrun : " + String.format("%4d", state.curTurn);
+        String text = "Overrun : " + String.format("%4d", state.curTurn / 2);
         VisualisationUtils.drawString(g, titleBox, rootFont, text, Color.BLACK);
         for (int i = 0; i < state.numPlayers; i++) {
             VisualisationUtils.drawString(g, playerNameBoxes[i], rootFont, state.names[i], state.colours[i]);
 
-            VisualisationUtils.drawString(g, moneyBoxes[i], rootFont, "Money:       " + String.format("%5d", state.money[i]), state.colours[i].darker());
-            VisualisationUtils.drawString(g, totalMoneyBoxes[i], rootFont, "Total money: " + String.format("%5d", state.totalMoney[i]), state.colours[i].darker());
-            VisualisationUtils.drawString(g, unitBoxes[i], rootFont, "Units:       " + String.format("%5d", state.unitCount[i]), state.colours[i].darker());
+            VisualisationUtils.drawString(g, moneyBoxes[i], rootFont,
+                    "Money:       " + String.format("%5d", state.money[i]), state.colours[i].darker());
+            VisualisationUtils.drawString(g, totalMoneyBoxes[i], rootFont,
+                    "Total money: " + String.format("%5d", state.totalMoney[i]), state.colours[i].darker());
+            VisualisationUtils.drawString(g, unitBoxes[i], rootFont,
+                    "Units:       " + String.format("%5d", state.unitCount[i]), state.colours[i].darker());
         }
 
         pulseCounter += 10;
@@ -157,33 +158,11 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
                 if (mineralPatch > 0) {
                     float colorMul = ((float) mineralPatch) / 50;
                     colorMul = Math.min(1, colorMul);
-                    Color interiorColor = avColor(Color.white, Color.getHSBColor((pulseCounter % 2000) / 2000f, 0.2f, 0.4f),
-                            colorMul);
+                    Color interiorColor = avColor(Color.white,
+                            Color.getHSBColor((pulseCounter % 2000) / 2000f, 0.2f, 0.4f), colorMul);
                     g.setColor(interiorColor);
                     boardBoxes[y][x].fill(g);
                 }
-            }
-        }
-        g.drawImage(newStateImg, 0, 0, null);
-    }
-
-    @Override
-    public void animateEvents(VisualGameState state, List<VisualGameEvent> events, int sWidth, int sHeight,
-            Graphics2D g) {
-        if (!render) {
-            return;
-        }
-        BoxFactory f = new BoxFactory(sWidth, sHeight);
-        for (VisualGameEvent ev : events) {
-            if (ev instanceof UnitUpdatedEvent) {
-                UnitUpdatedEvent e = (UnitUpdatedEvent) ev;
-                state.units.remove(new Pair<Integer, Integer>(e.player, e.unitId));
-                /* Tween on currentStrength and current position */
-                tweenUpdateEvent(state, f, e, g);
-            } else if (ev instanceof UnitCreatedEvent) {
-                // Just draw the unit
-            } else if (ev instanceof MoneyGainEvent) {
-                // Update the player's money
             }
         }
 
@@ -200,23 +179,64 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
             winnerScreen.fill(g);
             VisualisationUtils.drawString(g, winnerScreen, rootFont, state.winner, Color.WHITE);
         }
-        newStateImg = null;
     }
 
     @Override
-    public void eventCreated(VisualGameEvent e) {
+    public void animateEvents(VisualGameState state, List<VisualGameEvent> events, int sWidth, int sHeight,
+            Graphics2D g) {
+        if (!render) {
+            return;
+        }
+        BoxFactory f = new BoxFactory(sWidth, sHeight);
+        for (VisualGameEvent ev : events) {
+            if (ev instanceof UnitUpdatedEvent) {
+                UnitUpdatedEvent e = (UnitUpdatedEvent) ev;
+                /* Tween on currentStrength and current position */
+                tweenUpdateEvent(state, f, e, g);
+            } else if (ev instanceof UnitCreatedEvent) {
+                // Just draw the unit
+            } else if (ev instanceof MoneyGainEvent) {
+                // Update the player's money
+            }
+        }
+    }
+
+    @Override
+    public void eventCreated(VisualGameEvent e, VisualGameState state) {
         if (e instanceof UnitCreatedEvent) {
-            e.totalFrames = CREATED_FRAMES;
+            UnitCreatedEvent ev = (UnitCreatedEvent) e;
+            state.units.put(new Pair<Integer, Integer>(ev.player, ev.unitId),
+                    new Unit(ev.strength, ev.unitId, ev.player, ev.p));
+            state.unitCount[ev.player]++;
+
+            ev.totalFrames = CREATED_FRAMES;
         } else if (e instanceof UnitUpdatedEvent) {
-            e.totalFrames = UPDATED_FRAMES;
+            UnitUpdatedEvent ev = (UnitUpdatedEvent) e;
+            state.units.remove(new Pair<Integer, Integer>(ev.player, ev.unitId));
+
+            ev.totalFrames = UPDATED_FRAMES;
         } else if (e instanceof MoneyGainEvent) {
-            e.totalFrames = MONEY_DELTA_FRAMES;
+            MoneyGainEvent ev = (MoneyGainEvent) e;
+            state.money[ev.playerId] += ev.moneyGain;
+            state.totalMoney[ev.playerId] += ev.moneyGain;
+            for (Position pos : ev.minedBlocks) {
+                state.tileVals[pos.r][pos.c]--;
+            }
+
+            ev.totalFrames = MONEY_DELTA_FRAMES;
         } else if (e instanceof MoneySpendEvent) {
-            e.totalFrames = MONEY_DELTA_FRAMES;
-        } else if (e instanceof EndTurnEvent) {
-            e.totalFrames = Math.max(CREATED_FRAMES, Math.max(MONEY_DELTA_FRAMES, UPDATED_FRAMES));
+            MoneySpendEvent ev = (MoneySpendEvent) e;
+            state.money[ev.playerId] -= ev.moneySpend;
+
+            ev.totalFrames = MONEY_DELTA_FRAMES;
         } else if (e instanceof WinnerEvent) {
+            state.winner = ((WinnerEvent) e).winnerName;
+
             e.totalFrames = 1;
+        }
+
+        if (e instanceof EndTurnEvent) {
+            e.totalFrames = Math.max(CREATED_FRAMES, Math.max(MONEY_DELTA_FRAMES, UPDATED_FRAMES));
         } else if (e instanceof EndGameEvent) {
             e.totalFrames = 60;
         }
@@ -224,11 +244,8 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 
     @Override
     public void eventEnded(VisualGameEvent e, VisualGameState state) {
-        if (e instanceof UnitCreatedEvent) {
-            UnitCreatedEvent ev = (UnitCreatedEvent) e;
-            state.units.put(new Pair<Integer, Integer>(ev.player, ev.unitId),
-                    new Unit(ev.strength, ev.unitId, ev.player, ev.p));
-            state.unitCount[ev.player]++;
+        if (e instanceof EndTurnEvent) {
+            state.curTurn++;
         } else if (e instanceof UnitUpdatedEvent) {
             UnitUpdatedEvent ev = (UnitUpdatedEvent) e;
             if (ev.currStrength > 0) {
@@ -237,21 +254,8 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
             } else {
                 state.unitCount[ev.player]--;
             }
-        } else if (e instanceof MoneyGainEvent) {
-            MoneyGainEvent ev = (MoneyGainEvent) e;
-            state.money[ev.playerId] += ev.moneyGain;
-            state.totalMoney[ev.playerId] += ev.moneyGain;
-            for (Position pos : ev.minedBlocks) {
-                state.tileVals[pos.r][pos.c]--;
-            }
-        } else if (e instanceof MoneySpendEvent) {
-            MoneySpendEvent ev = (MoneySpendEvent) e;
-            state.money[ev.playerId] -= ev.moneySpend;
-        } else if (e instanceof EndTurnEvent) {
-            state.curTurn++;
-        } else if (e instanceof WinnerEvent) {
-            state.winner = ((WinnerEvent) e).winnerName;
         }
+
     }
 
     private void tweenUpdateEvent(VisualGameState state, BoxFactory f, UnitUpdatedEvent event, Graphics2D g) {
