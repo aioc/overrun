@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ausinformatics.overrun.Unit;
-import com.ausinformatics.overrun.visualisation.MoneyDeltaEvent;
+import com.ausinformatics.overrun.visualisation.MoneyGainEvent;
+import com.ausinformatics.overrun.visualisation.MoneySpendEvent;
 import com.ausinformatics.overrun.visualisation.UnitCreatedEvent;
 import com.ausinformatics.overrun.visualisation.UnitUpdatedEvent;
 import com.ausinformatics.overrun.visualisation.VisualGameState;
@@ -20,7 +21,8 @@ public class VisualReporter implements Reporter {
 	private EventBasedFrameVisualiser<VisualGameState> vis;
 	private List<VisualGameEvent> pendingEvents;
 	private List<Position> minedSquares;
-	private int curMoneyChange;
+	private int curMoneyGain;
+	private int curMoneySpend;
 	private int playerId;
 	private UnitUpdateHandler updatesHandler;
 
@@ -44,8 +46,12 @@ public class VisualReporter implements Reporter {
 
 	@Override
 	public void personMoneyChange(int id, int amount) {
+		if (amount > 0) {
+			curMoneyGain += amount;
+		} else {
+			curMoneySpend += -amount;
+		}
 		playerId = id;
-		curMoneyChange += amount;
 	}
 
 	@Override
@@ -62,11 +68,14 @@ public class VisualReporter implements Reporter {
 	public void endTurn() {
 		List<Pair<Unit, Unit>> updates = updatesHandler.getAllUpdates();
 		for (Pair<Unit, Unit> up : updates) {
-			pendingEvents.add(new UnitUpdatedEvent(up.first.ownerId, up.first.myId, up.second.strength,
-					up.first.strength, up.first.p, getDirMoved(up.first.p, up.second.p)));
+			pendingEvents.add(new UnitUpdatedEvent(up.first.ownerId, up.first.myId, up.second.strength, up.first.strength,
+					up.first.p, getDirMoved(up.first.p, up.second.p)));
 		}
-		if (curMoneyChange != 0) {
-			pendingEvents.add(new MoneyDeltaEvent(playerId, curMoneyChange, minedSquares));
+		if (curMoneyGain > 0) {
+			pendingEvents.add(new MoneyGainEvent(playerId, curMoneyGain, minedSquares));
+		}
+		if (curMoneySpend > 0) {
+			pendingEvents.add(new MoneySpendEvent(playerId, curMoneySpend));
 		}
 		pendingEvents.add(new EndTurnEvent());
 		vis.giveEvents(pendingEvents);
@@ -85,7 +94,7 @@ public class VisualReporter implements Reporter {
 	private void reset() {
 		pendingEvents = new ArrayList<VisualGameEvent>();
 		minedSquares = new ArrayList<Position>();
-		curMoneyChange = 0;
+		curMoneyGain = curMoneySpend = 0;
 		updatesHandler.clear();
 	}
 

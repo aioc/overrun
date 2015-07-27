@@ -19,6 +19,7 @@ public class VisualGameState {
 	public int curTurn;
 	public String[] names;
 	public int[] money;
+	public int[] totalMoney;
 	public Color[] colours;
 	public boolean isDead[];
 	public String winner;
@@ -32,6 +33,7 @@ public class VisualGameState {
 		this.curTurn = 1;
 		names = new String[numPlayers];
 		money = new int[numPlayers];
+		totalMoney = new int[numPlayers];
 		colours = new Color[numPlayers];
 		isDead = new boolean[numPlayers];
 		units = new HashMap<>();
