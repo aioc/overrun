@@ -173,7 +173,7 @@ bool new_game(const string& args) {
 
 bool gameover(const string& args) {
   printf("Game over: %s\n", args.c_str());
-  return true;  // End the game.
+  return true;
 }
 
 bool update_cell(const string& args) {
@@ -276,18 +276,15 @@ bool user_turn(const string& args) {
   state.fsm = State::ILLEGAL;
 
   std::ostringstream builder("MOVE", std::ostringstream::ate);
-  switch (state.buffer_builds.size()) {
-    case 0:
-      builder << " " << 0;
-      break;
-    case 1:
-      builder << " " << state.buffer_builds[0];
-      break;
-    default:
-      util::err("Called build() more than once -- resigning.");
-      return false;
+
+  // Building
+  if (state.buffer_builds.size() == 0) {
+    builder << " " << 0;
+  } else {
+    builder << " " << state.buffer_builds.back();
   }
 
+  // Moving
   builder << " " << state.buffer_moves.size();
   for (const auto& move : state.buffer_moves)
     builder << " " << move;
