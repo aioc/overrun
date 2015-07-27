@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.ausinformatics.overrun.reporters.ConnectionReporter;
 import com.ausinformatics.overrun.visualisation.VisualGameState;
+import com.ausinformatics.overrun.visualisation.WinnerEvent;
 import com.ausinformatics.phais.core.interfaces.PersistentPlayer;
 import com.ausinformatics.phais.core.server.ClientConnection;
 import com.ausinformatics.phais.core.server.DisconnectedException;
@@ -127,9 +128,9 @@ public class GameRunner implements GameHandler {
 		
 		
 		state.endGame();
-		//vis.giveEvent(new SnakeWinnerEvent(100000, name));
-		
+	
 		List<VisualGameEvent> finalEvents = new ArrayList<VisualGameEvent>();
+		finalEvents.add(new WinnerEvent(name));
 		finalEvents.add(new EndGameEvent());
 		
 		vis.giveEvents(finalEvents);

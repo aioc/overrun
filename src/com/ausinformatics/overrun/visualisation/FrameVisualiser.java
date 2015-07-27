@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 
 import com.ausinformatics.overrun.TerrainMap;
 import com.ausinformatics.overrun.Unit;
+import com.ausinformatics.phais.core.visualisation.EndGameEvent;
 import com.ausinformatics.phais.core.visualisation.EndTurnEvent;
 import com.ausinformatics.phais.core.visualisation.FrameVisualisationHandler;
 import com.ausinformatics.phais.core.visualisation.VisualGameEvent;
@@ -125,6 +126,12 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 			if (!render) {
 				return;
 			}
+			String text = "Overrun : " + String.format("%4d", state.curTurn);
+			VisualisationUtils.drawString(g, titleBox, rootFont, text, Color.BLACK);
+			for (int i = 0; i < state.numPlayers; i++) {
+				VisualisationUtils.drawString(g, playerNameBoxes[i], rootFont, state.names[i], state.colours[i]);
+				VisualisationUtils.drawString(g, statBoxes[i], rootFont, "Money: " + String.format("%5d", state.money[i]), state.colours[i].darker());
+			}
 		}
 
 		@Override
@@ -186,6 +193,8 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 				e.totalFrames = MONEY_DELTA_FRAMES;
 			} else if (e instanceof EndTurnEvent) {
 				e.totalFrames = Math.max(CREATED_FRAMES, Math.max(MONEY_DELTA_FRAMES, UPDATED_FRAMES));
+			} else if (e instanceof WinnerEvent) {
+				e.totalFrames = 1;
 			} else if (e instanceof EndGameEvent) {
 				e.totalFrames = 60;
 			}
@@ -209,8 +218,10 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
 				for (Position pos : ev.minedBlocks) {
 						state.tileVals[pos.r][pos.c]--;
 				}
-			} else if (e instanceof EndGameEvent) {
-				state.winner = ((EndGameEvent) e).winnerName;
+			} else if (e instanceof EndTurnEvent ) {
+				state.curTurn++;
+			} else if (e instanceof WinnerEvent) {
+				state.winner = ((WinnerEvent) e).winnerName;
 			}
 		}
 
