@@ -16,7 +16,7 @@ public class OverrunMain {
 		config.gameCommands.put("PARAMS", new GameParamsCommand(f));
 		config.gameCommands.put("ALLPARAMS", new AllGameParamsCommand(mapFactory));
 	    config.gameCommands.put("GCTIMEOUT", new GCTimeoutCommand(gc));
-	    new Thread(gc).start();
+	    gc.start();
 		new Director(new PlayerFactory(), f).run(config);
 	}
 }
