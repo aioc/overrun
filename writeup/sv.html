@@ -1,0 +1,297 @@
+<html>
+<head>
+<title>PHAIS: Google Edition</title>
+<link href='http://fonts.googleapis.com/css?family=Droid+Sans:400,700'
+	rel='stylesheet' type='text/css'>
+<style>
+@font-face {
+    font-family: 'Droid Sans';
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+	background: #000033; padding: 10px 100px 100px 100px;
+    font-family: 'Droid Sans';
+    font-size: 18px;
+color: #ffffff}
+
+p {margin-left: 20; }
+pre {margin: -8px 40px 8px 40px; padding: 4px 8px; background:
+	#333333; }
+h1 {font-size: 400%; font-weight: bold; margin-bottom: 10px; text-align: center;}
+h2 {font-size: 250%; margin-bottom: -10px; margin-top: 20px;}
+h3 {font-size: 150%; margin-bottom: -10px; margin-top: -5px;}
+td {text-align: center; padding: 0px 8px;}
+</style>
+</head>
+<body>
+<br>
+<p>
+  In this ruthless capitalist world, you have found yourself as the CEO of a
+  new startup located in Sillycone Valleý. Like any good startup, you
+  initially <strike>command</strike>employ exactly one <i>drone</i>; a
+  mindless employee who obeys your every whim.
+</p>
+ 
+<p>
+  Sillycone Valleý is fortunately laid out as a flat grid (though some squares
+  are not traversable because of ongoing construction), and your company
+  has a fixed office on this grid. There are also multiple <i>Venture
+  Capitalists</i> located in the Valleý; gullible investors who will throw
+  money at your company any time a drone visits their door.
+</p>
+
+<p>
+  To grow your company, you may spend any amount of money to buy a desperate
+  drone a stock of energy drinks -- drones don't require anything as silly as
+  an annual salary or health insurance -- and they will immediately appear at
+  your office. Of course, to get money you only need to visit a <i>Venture
+  Capitalist</i>; no work actually needs to be completed for your drones to
+  suck up their money. Each visit to the house of a <i>Venture Capitalist</i>
+  will earn you exactly $1; you may visit a house once per turn.
+</p>
+
+<p>
+  Unfortunately, yours is not the only company in Sillycone Valleý! Other
+  companies have drones too, however you do not stand for fair competition
+  (and neither do they) so your overall objective is to <i>destroy</i> their
+  company (after all, your Uber for &lt;x&gt; idea doesn't work if two people
+  do it). A company is considered <i>destroyed</i> if it has no drones
+  left. Through impeccable town planning, Sillycone Valleý is rotationally
+  symmetric for each office in the area, so there are no competitive
+  advantages or disadvantages for the starting offices.
+</p>
+
+<p>
+  When two drones from competing companies arrive at the same location in
+  Sillycone Valleý, they will both participate in a code duel (fuelled only by
+  their energy drinks). The drone with the smaller drink count (denote
+  this drone's energy drink count as 'a') will eventually pass out and,
+  since they have no more energy drinks, be forced to quit the company and find
+  a job that pays an actual salary. The drone with the larger stock will
+  have his stock <i>reduced</i> by 'a', but continue on as an drone.
+</p>
+
+<p>
+  Due to FCC restrictions, all companies in Sillycone Valleý are required to
+  be completely transparent both in terms of their financial state and the
+  location of their drones -- this means that you will always have full
+  information on every other company in the Valleý
+</p>
+
+<h3>Victory</h3>
+
+<p>
+A startup is victorious if all other startups have been eliminated. Your plan
+for world <strike>domination</strike>optimisation can be put into place
+</p>
+
+<br>
+<center>
+<img src="overrun.png" alt="screenshot"/>
+</center>
+
+<h2>Interface</h2>
+
+<p>
+We provide a g++-compiled .o file that does network communcation and general
+utility items for you. You <b>must</b> not write a <pre>main()</pre> function
+since our library will provide this.
+</p>
+
+<p>
+You should implement the functions described below, in your source file
+</p>
+
+<h3>Headers</h3>
+
+<p>You'll need the following line to start with:</p>
+<pre>#include "valley.h"</pre>
+
+<h3>clientRegister</h3>
+
+<p>
+  <i>clientRegister()</i> is called when the client first logs on to the
+  server. You should call <i>setName(const char* name)</i> to define
+  the name of your AI and <i>setColour(int r, int g, int b)</i> to
+  elect a preferred colour. Names can be up to 16 characters long and
+  colour components are between 0 and 255 inclusive. Names will be
+  deduplicated by appending a random sequence of digits to the end; you should
+  be creative to avoid this!
+</p>
+
+<pre>void clientRegister(void) {
+  setName("BlackPerl");
+  setColour(41, 35, 52);
+}</pre>
+
+
+<h3>clientInit</h3>
+
+<p>
+  <i>clientInit(int numPlayers, int boardSize, int playerID)</i> is
+  called at the start of a game. The argument <i>numPlayers</i>
+  specifies the number of players in this game. The
+  argument <i>boardSize</i> specifies the height/width of the game
+  board, which is always square. The argument <i>playerID</i>
+  specifies your player ID throughout the game. Any persistent data
+  structures that you use throughout the course of a game are best
+  initialised here.
+</p>
+
+<pre>void clientInit(int numPlayers, int boardSize, int playerID) {
+    numP = numPlayers;
+    size = boardSize;
+    myID = playerID;
+
+    // Initialise state...
+    int i, j;
+    for (i = 0; i &lt; size; i++) {
+        for (j = 0; j &lt; size; j++) {
+            board[i][j] = -1;
+        }
+    }
+}</pre>
+
+<p><i>clientInit()</i> must return within one second.</p>
+
+<h3>clientMoneyInfo</h3>
+
+<p>
+  <i>clientMoneyInfo(int pid, int moneyCount)</i> is called once for each player
+  currently in the game, before your turn. It informs you that the player with
+  id <i>pid</i> has <i>moneyCount</i> money in the bank.
+</p>
+
+<pre>void clientMoneyInfo(int pId, int moneyCount) {
+    money[pid] = moneyCount;
+}</pre>
+
+<h3>clientTerrainInfo</h3>
+
+<p>
+  <i>clientTerrainInfo(int x, int y, int type)</i> will be called for each
+  square on the board, before you take your turn. The possible values for
+  <i>type</i> are as follows:
+  <table>
+      <tr><td>Value</td><td>Meaning</td></tr>
+      <tr><td>0</td><td>Blank square</td></tr>
+      <tr><td>-99</td><td>Untraversable square</td></tr>
+      <tr><td>&gt;0</td><td><i>Venture Capitalist</i> willing to offer at most this much money</td></tr>
+      <tr><td>&lt;0</td><td>Player base. If <i>type</i> = <i>-n</i>, this
+          indicates the base of player <i>n</i></td></tr>
+  </table>
+</p>
+
+<pre>void clientTerrainInfo(int x, int y, int type) {
+    for (int i = 0; i &lt; length; i++) {
+        board[y][x] = type;
+    }
+}</pre>
+
+<p><i>clientTerrainInfo</i> must return within one second.</p>
+
+<h3>clientDroneLocation</h3>
+
+<p>
+  <i>clientDroneLocation(int pid, int id, int x, int y, int numCans)</i> is
+  called for each drone currently on the board, before you take your turn.
+  This function tells you which player's company the drone belongs to, the
+  drone's employee id, the x and y coordinates of the drone and the number of
+  cans of energy drink they have remaining.
+</p>
+<p>
+  The drone's ID will be constant for the duration of the game
+</p>
+
+<pre>void clientDroneLocation(int pid, int id, int x, int y, int numCans) {
+    drones[y][x] = Drone(pid, id, numCans);
+}</pre>
+    
+<p><i>clientDroneLocation</i> must return within one second.</p>
+
+<h3>clientDoTurn</h3>
+
+<p>
+  <i>clientDoTurn()</i> is called when it's your turn to play a turn. There
+  are 4 different functions that you might find useful to call in this
+  function.
+</p>
+
+<p>
+  You may call <i>makeMove(int unitId, int move)</i>. The argument
+  <i>unitId</i> is the id of one of <b>your</b> drones, and the argument
+  <i>move</i> will represent a either a compass direction (NORTH, EAST, SOUTH,
+  WEST) or EXTRACT, indication that you wish this drone to extract $1 from the
+  <i>Venture Capitalist</i> on this square.
+</p>
+
+<p>
+  If you attempt to call <i>makeMove(uid, move)</i> more than once per unit
+  the behaviour the server assumes you meant is undefined.
+</p>
+
+<p>
+  You may also call <i>build(int cost)</i>. This function indicates that you
+  wish to hire a new employee, spending $<i>cost</i> on energy drinks. There
+  are two auxillary functions that may inform your choice of <i>cost</i>: you
+  may call <i>int getCost(int numCans)</i> to get the cost required to
+  employ a drone with <i>numCans</i> cans of energy drink, and you may call
+  <i>int getCans(int cost)</i> to get the number of cans given you intend to
+  spend $<i>cost</i> on hiring an employee.
+</p>
+
+<p><i>clientDoTurn()</i> must return within <b>two</b> seconds.</p>
+
+<pre>void clientDoTurn() {
+    for (int i = 0; i &lt; numMyUnits; i++) {
+        move(i, DOWN); 
+    }
+    build(getCost(getCans(1))); // getCans is the inverse of getCost, so this
+                                // is equivalent to build(1); 
+}</pre>
+
+<h2>Example code / compiling your code</h2>
+
+<p>Download <tt>valley_library.o</tt> and <tt>valley.h</tt>, along with an example AI and support libraries,
+from <a href='valley_client_v1.zip'>here</a>.
+
+<p>
+  It is recommended that you use, from the command line, both <tt>g++</tt> to
+  compile the library and <tt>g++</tt> to compile your code.
+</p>
+
+<!--<p>Use the following line to compile the library:</p>
+
+<pre>$ g++ valley_library.cpp -std=c++11 -c -o valley_library.o</pre>--!>
+
+<p>Use the following line to compile your code:</p>
+
+<pre>$ g++ <i>your_file</i>.cpp valley_library.o -o <i>your_program</i> </pre>
+
+<p>Run the program from the command line like so:</p>
+
+<pre>$ <i>your_program</i> <i>ip</i></pre>
+
+<h2>Testing your code</h2>
+
+<p>You can test your code by connecting to the main server &mdash; look at the title bar on the projector screen.</p>
+
+<p>If you wish to run your own server, <a href="valley-student.jar">download
+    the server</a> and run it using "java -jar valley-student.jar".</p>
+
+<p>
+To test your code, do the following:</p>
+
+<ul>
+<li>Run the server.
+<li>Start each player, with an IP of <pre>127.0.0.1</pre>.
+</ul>
+
+<p>
+Type "<tt>help</tt>" to the server to find out more about the server.
+</p>
+
+</body>
+</html>

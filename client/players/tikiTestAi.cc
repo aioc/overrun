@@ -4,7 +4,7 @@
 #include <queue>
 #include <algorithm>
 using namespace std;
-#include "overrun.h"
+#include "valley.h"
 
 // general idea: the object of the game is to mine the shit out of everything
 // and outlive the other player (in this AI's mind).
@@ -144,7 +144,7 @@ void clientInit(int playerCount, int boardSize, int pid) {
 	MY_ID = pid;
 }
 
-void clientJuiceInfo(int pid, int juiceCount) {
+void clientMoneyInfo(int pid, int juiceCount) {
 	playersMinerals[pid] = juiceCount;
 }
 
@@ -156,7 +156,7 @@ void clientTerrainInfo(int x, int y, int type) {
 	}
 }
 
-void clientStudentLocation(int pid, int id, int x, int y, int level) {
+void clientDroneLocation(int pid, int id, int x, int y, int level) {
 	if (level > 0) { // Anything that is level 0 or below is dead, so we don't worry about it.
 		whatOnSquare[y][x].ownerID = pid;
 		whatOnSquare[y][x].unitID = id;

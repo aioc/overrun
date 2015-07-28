@@ -16,7 +16,7 @@
 #include <netinet/tcp.h>
 #include <signal.h>
 
-#include "overrun.h"
+#include "valley.h"
 
 using std::string;
 using std::vector;
@@ -89,8 +89,11 @@ struct {
 //////////////////////////////
 // Public player methods
 //
-void setName(const char* name, int r, int g, int b) {
+void setName(const char* name) {
   player.name = name;
+}
+
+void setColour(int r, int g, int b) {
   player.r = r;
   player.g = g;
   player.b = b;
@@ -122,7 +125,7 @@ int getCost(int level) {
   return level;
 }
 
-int getLevel(int cost) {
+int getCans(int cost) {
   return cost;
 }
 
@@ -262,13 +265,13 @@ bool update_unit(const string& args) {
 bool user_turn(const string& args) {
   // Notify the client of game state.
   for (size_t i = 0; i < state.money.size(); i++)
-    clientJuiceInfo(i, state.money[i]);
+    clientMoneyInfo(i, state.money[i]);
   for (size_t i = 0; i < state.map.size(); i++)
     for (size_t k = 0; k < state.map[i].size(); k++)
       clientTerrainInfo(k, i, state.map[i][k]);
   for (const auto it : state.units) {
     const auto& unit = it.second;
-    clientStudentLocation(unit.id.first, unit.id.second, unit.x, unit.y, unit.level);
+    clientDroneLocation(unit.id.first, unit.id.second, unit.x, unit.y, unit.level);
   }
 
   state.fsm = State::USER_TURN;

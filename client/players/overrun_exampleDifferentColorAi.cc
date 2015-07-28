@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "overrun.h"
+#include "valley.h"
 
 struct unit {
    int ownerID;
@@ -135,7 +135,7 @@ void clientInit(int playerCount, int boardSize, int playerID) {
    numUnits = 0;
 }
 
-void clientJuiceInfo(int pid, int juiceCount) {
+void clientMoneyInfo(int pid, int juiceCount) {
    playersMinerals[pid] = juiceCount;
 }
 
@@ -143,7 +143,7 @@ void clientTerrainInfo(int x, int y, int type) {
    terrain[y][x] = type;
 }
 
-void clientStudentLocation(int pid, int id, int x, int y, int level) {
+void clientDroneLocation(int pid, int id, int x, int y, int level) {
    allUnits[numUnits].ownerID = pid;
    allUnits[numUnits].unitID = id;
    allUnits[numUnits].x = x;

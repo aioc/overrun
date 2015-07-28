@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "overrun.h"
+#include "valley.h"
 
 #define TRUE                     1
 #define FALSE                    0
@@ -405,7 +405,8 @@ void reset (void) {
 
 void clientRegister() {
    // We need to call setName ()
-   setName ("Skynet", 0x10, 0x80, 0x90);
+   setName ("Skynet");
+   setColour (0x10, 0x80, 0x90);
 
    // We also want to seed the random generator
    srand (time (NULL));
@@ -420,7 +421,7 @@ void clientInit(int playerCount, int boardSize, int playerID) {
    amoToSplit = 10;
 }
 
-void clientJuiceInfo(int pid, int juiceCount) {
+void clientMoneyInfo(int pid, int juiceCount) {
    playersMinerals[pid] = juiceCount;
 }
 
@@ -431,7 +432,7 @@ void clientTerrainInfo(int x, int y, int type) {
    }
 }
 
-void clientStudentLocation(int pid, int id, int x, int y, int level) {
+void clientDroneLocation(int pid, int id, int x, int y, int level) {
    if (preOnSquare[y][x].unitID == id && preOnSquare[y][x].ownerID == pid && preOnSquare[y][x].level == level && pid != myID) {
       stillUnits[amoStill].x = x;
       stillUnits[amoStill].y = y;

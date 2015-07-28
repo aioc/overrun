@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "overrun.h"
+#include "valley.h"
 
 
 
@@ -64,14 +64,14 @@ void clientTerrainInfo(int x, int y, int type) {
 	}
 }
 
-void clientJuiceInfo(int pid, int minerals) {
+void clientMoneyInfo(int pid, int minerals) {
 	//printf ("Told about juice: %d %d\n", pid, minerals);
 	if (pid == myID) {
 		resources = minerals;
 	}
 }
 
-void clientStudentLocation(int pid, int id, int x, int y, int level) {
+void clientDroneLocation(int pid, int id, int x, int y, int level) {
 	//printf ("Told about unit: %d %d %d %d %d\n", pid, id, y, x, level);
 	// If this is about our own player
 	if (pid == myID) {

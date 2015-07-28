@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "overrun.h"
+#include "valley.h"
 
 #define TRUE                     1
 #define FALSE                    0
@@ -387,7 +387,7 @@ void clientInit(int playerCount, int boardSize, int playerID) {
    amoToSplit = 10;
 }
 
-void clientJuiceInfo(int pid, int juiceCount) {
+void clientMoneyInfo(int pid, int juiceCount) {
    playersMinerals[pid] = juiceCount;
 }
 
@@ -398,7 +398,7 @@ void clientTerrainInfo(int x, int y, int type) {
    }
 }
 
-void clientStudentLocation(int pid, int id, int x, int y, int level) {
+void clientDroneLocation(int pid, int id, int x, int y, int level) {
    if (preOnSquare[y][x].unitID == id && preOnSquare[y][x].ownerID == pid && preOnSquare[y][x].level == level && pid != myID) {
       stillUnits[amoStill].x = x;
       stillUnits[amoStill].y = y;

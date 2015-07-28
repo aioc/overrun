@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "overrun.h"
+#include "valley.h"
 
 #define TRUE         1
 #define FALSE        0
@@ -240,7 +240,7 @@ void clientInit(int playerCount, int boardSize, int playerID) {
    numUnits = 0;
 }
 
-void clientJuiceInfo(int pid, int juiceCount) {
+void clientMoneyInfo(int pid, int juiceCount) {
    playersMinerals[pid] = juiceCount;
 }
 
@@ -248,7 +248,7 @@ void clientTerrainInfo(int x, int y, int type) {
    terrain[y][x] = type;
 }
 
-void clientStudentLocation(int pid, int id, int x, int y, int level) {
+void clientDroneLocation(int pid, int id, int x, int y, int level) {
       whatOnSquare[y][x].ownerID = pid;
       whatOnSquare[y][x].unitID = id;
       whatOnSquare[y][x].level = level;
