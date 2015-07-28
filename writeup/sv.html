@@ -1,5 +1,6 @@
 <html>
 <head>
+<meta charset="utf-8" />
 <title>PHAIS: Google Edition</title>
 <link href='http://fonts.googleapis.com/css?family=Droid+Sans:400,700'
 	rel='stylesheet' type='text/css'>
@@ -43,34 +44,36 @@ td {text-align: center; padding: 0px 8px;}
 </p>
 
 <p>
-  To grow your company, you may spend any amount of money to buy a desperate
-  drone a stock of energy drinks -- drones don't require anything as silly as
-  an annual salary or health insurance -- and they will immediately appear at
-  your office. Of course, to get money you only need to visit a <i>Venture
-  Capitalist</i>; no work actually needs to be completed for your drones to
-  suck up their money. Each visit to the house of a <i>Venture Capitalist</i>
-  will earn you exactly $1; you may visit a house once per turn.
+  To grow your company, you may spend any amount of money to buy a number of
+  energy drinks, all of which you give to a drone as a 'hiring bonus' -- drones
+  don't require anything as silly as an annual salary or health insurance --
+  and the drone will immediately appear at your office. Of course, to get money
+  you only need to visit a <i>Venture Capitalist</i>; no work actually needs to
+  be completed for your drones to suck up their money. Each visit to the house
+  of a <i>Venture Capitalist</i> will earn you exactly $1; you may visit a
+  house once per turn. You are guaranteed that the cost of energy drinks will
+  remain invariant for the length of time you are in the Valleý.
 </p>
 
 <p>
   Unfortunately, yours is not the only company in Sillycone Valleý! Other
-  companies have drones too, however you do not stand for fair competition
-  (and neither do they) so your overall objective is to <i>destroy</i> their
-  company (after all, your Uber for &lt;x&gt; idea doesn't work if two people
-  do it). A company is considered <i>destroyed</i> if it has no drones
+  companies have drones too, however you do not stand for fair competition (and
+  neither do they) so your overall objective is to <i>destroy</i> their company
+  (after all, your &lt;x&gt;-as-a-service-in-the-cloud idea doesn't work if two
+  people do it). A company is considered <i>destroyed</i> if it has no drones
   left. Through impeccable town planning, Sillycone Valleý is rotationally
-  symmetric for each office in the area, so there are no competitive
-  advantages or disadvantages for the starting offices.
+  symmetric for each office in the area, so there are no competitive advantages
+  or disadvantages for the starting offices.
 </p>
 
 <p>
   When two drones from competing companies arrive at the same location in
   Sillycone Valleý, they will both participate in a code duel (fuelled only by
-  their energy drinks). The drone with the smaller drink count (denote
-  this drone's energy drink count as 'a') will eventually pass out and,
-  since they have no more energy drinks, be forced to quit the company and find
-  a job that pays an actual salary. The drone with the larger stock will
-  have his stock <i>reduced</i> by 'a', but continue on as an drone.
+  their energy drinks). The drone with the smaller drink count (denote this
+  drone's energy drink count as 'a') will eventually pass out and, since they
+  have no more energy drinks, be forced to quit the company and find a job that
+  pays an actual salary. The drone with the larger stock will have their stock
+  <i>reduced</i> by 'a', but continue on as an drone.
 </p>
 
 <p>
@@ -89,7 +92,7 @@ for world <strike>domination</strike>optimisation can be put into place
 
 <br>
 <center>
-<img src="overrun.png" alt="screenshot"/>
+  <img src="valley.png" alt="screenshot" style="width: 80%; height: auto;" />
 </center>
 
 <h2>Interface</h2>
@@ -108,6 +111,11 @@ You should implement the functions described below, in your source file
 
 <p>You'll need the following line to start with:</p>
 <pre>#include "valley.h"</pre>
+
+<p>This file also defines a number of constants that you might find useful to
+  work with; we strongly recommend quickly reading through it to get familiar
+  with them.
+</p>
 
 <h3>clientRegister</h3>
 
