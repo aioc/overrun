@@ -4,39 +4,40 @@ import java.io.PrintStream;
 
 import com.ausinformatics.phais.core.Director;
 import com.ausinformatics.phais.core.commander.commands.Command;
+import com.ausinformatics.phais.utils.GCRunner;
 
-public class GameParamsCommand implements Command {
+public class GCTimeoutCommand implements Command {
 
-    private GameFactory f;
+    private GCRunner gc;
 
-    public GameParamsCommand(GameFactory f) {
-        this.f = f;
+    public GCTimeoutCommand(GCRunner gc) {
+        this.gc = gc;
     }
 
     @Override
     public void execute(Director reportTo, PrintStream out, String[] args) {
         boolean badArgs = false;
-        int boardSize = 0;
+        int timeout = 0;
         if (args.length != 1) {
             badArgs = true;
         } else {
             try {
-                boardSize = Integer.parseInt(args[0]);
+                timeout = Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
                 badArgs = true;
             }
         }
 
         if (badArgs) {
-            out.println("Usage: PARAMS boardSize");
+            out.println("Usage: PARAMS timeout");
         } else {
-            f.boardSize = boardSize;
+            gc.timeout = timeout;
         }
     }
 
     @Override
     public String shortHelpString() {
-        return "Change the params of the games.\nIn order of boardSize";
+        return "Change the timeout of the gc runner.\nIn order of timeout";
     }
 
     @Override
