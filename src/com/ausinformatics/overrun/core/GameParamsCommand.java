@@ -3,7 +3,6 @@ package com.ausinformatics.overrun.core;
 import java.io.PrintStream;
 
 import com.ausinformatics.phais.common.commander.Command;
-import com.ausinformatics.phais.server.Director;
 
 public class GameParamsCommand implements Command {
 
@@ -14,7 +13,7 @@ public class GameParamsCommand implements Command {
     }
 
     @Override
-    public void execute(Director reportTo, PrintStream out, String[] args) {
+    public void execute(PrintStream out, String[] args) {
         boolean badArgs = false;
         int boardSize = 0;
         if (args.length != 1) {

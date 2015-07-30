@@ -7,8 +7,7 @@ import com.ausinformatics.phais.server.Director;
 public class ServerSetup {
 
     public void start(Config config) {
-        config.maxParallelGames = 1;
-        //config.visualise = false;
+        config.maxParallelGames = 10;
         TerrainMapFactory mapFactory = new TerrainMapFactory();
         GameFactory f = new GameFactory(mapFactory);
         config.gameCommands.put("PARAMS", new GameParamsCommand(f));
