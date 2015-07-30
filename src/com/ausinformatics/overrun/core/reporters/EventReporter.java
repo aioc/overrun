@@ -1,24 +1,23 @@
-package com.ausinformatics.overrun.reporters;
+package com.ausinformatics.overrun.core.reporters;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ausinformatics.overrun.Unit;
+import com.ausinformatics.overrun.core.Unit;
 import com.ausinformatics.overrun.visualisation.MoneyGainEvent;
 import com.ausinformatics.overrun.visualisation.MoneySpendEvent;
 import com.ausinformatics.overrun.visualisation.UnitCreatedEvent;
 import com.ausinformatics.overrun.visualisation.UnitUpdatedEvent;
-import com.ausinformatics.overrun.visualisation.VisualGameState;
-import com.ausinformatics.phais.core.visualisation.EndTurnEvent;
-import com.ausinformatics.phais.core.visualisation.EventBasedFrameVisualiser;
-import com.ausinformatics.phais.core.visualisation.VisualGameEvent;
+import com.ausinformatics.phais.common.events.EventReceiver;
+import com.ausinformatics.phais.common.events.VisualGameEvent;
+import com.ausinformatics.phais.common.events.events.EndTurnEvent;
 import com.ausinformatics.phais.utils.Pair;
 import com.ausinformatics.phais.utils.Position;
 
 // Idea of this class is to only hold stuff for one turn, as it will then disappear.
-public class VisualReporter implements Reporter {
+public class EventReporter implements Reporter {
 
-	private EventBasedFrameVisualiser<VisualGameState> vis;
+	private EventReceiver er;
 	private List<VisualGameEvent> pendingEvents;
 	private List<Position> minedSquares;
 	private int curMoneyGain;
@@ -26,8 +25,8 @@ public class VisualReporter implements Reporter {
 	private int playerId;
 	private UnitUpdateHandler updatesHandler;
 
-	public VisualReporter(EventBasedFrameVisualiser<VisualGameState> vis) {
-		this.vis = vis;
+	public EventReporter(EventReceiver er) {
+		this.er = er;
 		updatesHandler = new UnitUpdateHandler();
 		reset();
 	}
@@ -78,7 +77,7 @@ public class VisualReporter implements Reporter {
 			pendingEvents.add(new MoneySpendEvent(playerId, curMoneySpend));
 		}
 		pendingEvents.add(new EndTurnEvent());
-		vis.giveEvents(pendingEvents);
+		er.giveEvents(pendingEvents);
 		reset();
 	}
 

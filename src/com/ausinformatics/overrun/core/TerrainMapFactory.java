@@ -1,4 +1,4 @@
-package com.ausinformatics.overrun;
+package com.ausinformatics.overrun.core;
 
 public class TerrainMapFactory {
 

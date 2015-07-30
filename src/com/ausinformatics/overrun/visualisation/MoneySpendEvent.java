@@ -1,6 +1,6 @@
 package com.ausinformatics.overrun.visualisation;
 
-import com.ausinformatics.phais.core.visualisation.VisualGameEvent;
+import com.ausinformatics.phais.common.events.VisualGameEvent;
 
 public class MoneySpendEvent extends VisualGameEvent {
 

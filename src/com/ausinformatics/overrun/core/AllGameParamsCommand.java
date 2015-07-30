@@ -1,9 +1,9 @@
-package com.ausinformatics.overrun;
+package com.ausinformatics.overrun.core;
 
 import java.io.PrintStream;
 
-import com.ausinformatics.phais.core.Director;
-import com.ausinformatics.phais.core.commander.commands.Command;
+import com.ausinformatics.phais.common.commander.Command;
+import com.ausinformatics.phais.server.Director;
 
 public class AllGameParamsCommand implements Command {
 

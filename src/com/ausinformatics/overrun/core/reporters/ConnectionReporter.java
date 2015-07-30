@@ -1,7 +1,7 @@
-package com.ausinformatics.overrun.reporters;
+package com.ausinformatics.overrun.core.reporters;
 
-import com.ausinformatics.overrun.Unit;
-import com.ausinformatics.phais.core.server.ClientConnection;
+import com.ausinformatics.overrun.core.Unit;
+import com.ausinformatics.phais.server.server.ClientConnection;
 import com.ausinformatics.phais.utils.Position;
 
 public class ConnectionReporter implements Reporter {

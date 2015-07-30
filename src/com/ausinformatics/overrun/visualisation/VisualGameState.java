@@ -2,14 +2,10 @@ package com.ausinformatics.overrun.visualisation;
 
 import java.awt.Color;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import com.ausinformatics.overrun.Player;
-import com.ausinformatics.overrun.TerrainMap;
-import com.ausinformatics.overrun.Unit;
-import com.ausinformatics.phais.core.interfaces.PersistentPlayer;
+import com.ausinformatics.overrun.core.Unit;
 import com.ausinformatics.phais.utils.Pair;
 
 public class VisualGameState {
@@ -28,9 +24,9 @@ public class VisualGameState {
 	public Map<Pair<Integer, Integer>, Unit> units;
 	public int[][] tileVals;
 
-	public VisualGameState(int boardSize, int numPlayers, List<PersistentPlayer> players, TerrainMap m) {
-		this.numPlayers = numPlayers;
-		this.boardSize = boardSize;
+	public VisualGameState(InitialGameEvent ev) {
+		this.numPlayers = ev.numPlayers;
+		this.boardSize = ev.boardSize;
 		this.curTurn = 1;
 		names = new String[numPlayers];
 		money = new int[numPlayers];
@@ -42,14 +38,14 @@ public class VisualGameState {
 		tileVals = new int[boardSize][boardSize];
 		for (int i = 0; i < boardSize; i++) {
 			for (int j = 0; j < boardSize; j++) {
-				tileVals[i][j] = m.getTerrain(j, i);
+				tileVals[i][j] = ev.map[i][j];
 			}
 		}
 
 		for (int i = 0; i < numPlayers; i++) {
-			names[i] = players.get(i).getName();
+			names[i] = ev.playerNames.get(i);
 			money[i] = totalMoney[i] = unitCount[i] = 0;
-			colours[i] = new Color(((Player) players.get(i)).getColour());
+			colours[i] = new Color(ev.playerColours.get(i));
 			isDead[i] = false;
 			for (int j = 0; j < i; j++) {
 				Color original = colours[i];

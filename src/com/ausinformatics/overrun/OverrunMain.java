@@ -1,22 +1,17 @@
 package com.ausinformatics.overrun;
 
-import com.ausinformatics.phais.core.Config;
-import com.ausinformatics.phais.core.Director;
-import com.ausinformatics.phais.utils.GCRunner;
+import com.ausinformatics.overrun.core.ServerSetup;
+import com.ausinformatics.overrun.visualisation.VisualSetup;
+import com.ausinformatics.phais.common.Config;
 
 public class OverrunMain {
 	public static void main(String[] args) {
 		Config config = new Config();
 		config.parseArgs(args);
-		config.maxParallelGames = 1;
-		//config.visualise = false;
-		TerrainMapFactory mapFactory = new TerrainMapFactory();
-		GameFactory f = new GameFactory(mapFactory);
-		GCRunner gc = new GCRunner();
-		config.gameCommands.put("PARAMS", new GameParamsCommand(f));
-		config.gameCommands.put("ALLPARAMS", new AllGameParamsCommand(mapFactory));
-	    config.gameCommands.put("GCTIMEOUT", new GCTimeoutCommand(gc));
-	    gc.start();
-		new Director(new PlayerFactory(), f).run(config);
+		if (config.visualise) {
+            new VisualSetup().start(config);
+		} else {
+		    new ServerSetup().start(config);
+		}
 	}
 }

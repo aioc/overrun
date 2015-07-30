@@ -8,12 +8,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
 
-import com.ausinformatics.overrun.TerrainMap;
-import com.ausinformatics.overrun.Unit;
-import com.ausinformatics.phais.core.visualisation.EndGameEvent;
-import com.ausinformatics.phais.core.visualisation.EndTurnEvent;
-import com.ausinformatics.phais.core.visualisation.FrameVisualisationHandler;
-import com.ausinformatics.phais.core.visualisation.VisualGameEvent;
+import com.ausinformatics.overrun.core.TerrainMap;
+import com.ausinformatics.overrun.core.Unit;
+import com.ausinformatics.phais.common.events.VisualGameEvent;
+import com.ausinformatics.phais.common.events.events.EndGameEvent;
+import com.ausinformatics.phais.common.events.events.EndTurnEvent;
+import com.ausinformatics.phais.spectator.interfaces.FrameVisualisationHandler;
 import com.ausinformatics.phais.utils.Pair;
 import com.ausinformatics.phais.utils.Position;
 import com.ausinformatics.phais.utils.VisualisationUtils;
@@ -25,7 +25,7 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
     private static final int LARGE_BORDER = 10;
     private static final int SMALL_BORDER = 3;
     private final int CREATED_FRAMES = 1;
-    private final int UPDATED_FRAMES = 5;
+    private final int UPDATED_FRAMES = 1;
     private final int MONEY_DELTA_FRAMES = 1;
     private Box boardBox;
     private Box statsBox;
@@ -298,5 +298,15 @@ public class FrameVisualiser implements FrameVisualisationHandler<VisualGameStat
     private Color avColor(Color c1, Color c2, float colorMul) {
         return avColor(c1.getRed() / 255f, c1.getGreen() / 255f, c1.getBlue() / 255f, c2.getRed() / 255f,
                 c2.getGreen() / 255f, c2.getBlue() / 255f, colorMul);
+    }
+
+    @Override
+    public VisualGameState createInitial(VisualGameEvent firstEvent) {
+        if (!(firstEvent instanceof InitialGameEvent)) {
+            System.out.println("First event isn't the right type");
+            return null;
+        }
+        InitialGameEvent ev = (InitialGameEvent) firstEvent;
+        return new VisualGameState(ev);
     }
 }

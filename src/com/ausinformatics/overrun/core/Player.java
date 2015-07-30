@@ -1,10 +1,10 @@
-package com.ausinformatics.overrun;
+package com.ausinformatics.overrun.core;
 
 import java.util.Random;
 
-import com.ausinformatics.phais.core.interfaces.PersistentPlayer;
-import com.ausinformatics.phais.core.server.ClientConnection;
-import com.ausinformatics.phais.core.server.DisconnectedException;
+import com.ausinformatics.phais.server.interfaces.PersistentPlayer;
+import com.ausinformatics.phais.server.server.ClientConnection;
+import com.ausinformatics.phais.server.server.DisconnectedException;
 
 public class Player implements PersistentPlayer {
 

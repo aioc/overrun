@@ -1,6 +1,6 @@
 package com.ausinformatics.overrun.visualisation;
 
-public class WinnerEvent extends com.ausinformatics.phais.core.visualisation.EndGameEvent {
+public class WinnerEvent extends com.ausinformatics.phais.common.events.events.EndGameEvent {
     public String winnerName;
 
     public WinnerEvent(String winnerName) {

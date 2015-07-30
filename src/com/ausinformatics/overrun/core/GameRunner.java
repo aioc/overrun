@@ -1,4 +1,4 @@
-package com.ausinformatics.overrun;
+package com.ausinformatics.overrun.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,38 +6,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ausinformatics.overrun.reporters.ConnectionReporter;
-import com.ausinformatics.overrun.visualisation.VisualGameState;
+import com.ausinformatics.overrun.core.reporters.ConnectionReporter;
 import com.ausinformatics.overrun.visualisation.WinnerEvent;
-import com.ausinformatics.phais.core.interfaces.PersistentPlayer;
-import com.ausinformatics.phais.core.server.ClientConnection;
-import com.ausinformatics.phais.core.server.DisconnectedException;
-import com.ausinformatics.phais.core.visualisation.EndGameEvent;
-import com.ausinformatics.phais.core.visualisation.EventBasedFrameVisualiser;
-import com.ausinformatics.phais.core.visualisation.GameHandler;
-import com.ausinformatics.phais.core.visualisation.VisualGameEvent;
+import com.ausinformatics.phais.common.events.EventReceiver;
+import com.ausinformatics.phais.common.events.VisualGameEvent;
+import com.ausinformatics.phais.common.events.events.EndGameEvent;
+import com.ausinformatics.phais.server.interfaces.GameInstance;
+import com.ausinformatics.phais.server.interfaces.PersistentPlayer;
+import com.ausinformatics.phais.server.server.ClientConnection;
+import com.ausinformatics.phais.server.server.DisconnectedException;
 
-public class GameRunner implements GameHandler {
+public class GameRunner implements GameInstance {
 
 	private GameState state;
 	private List<PersistentPlayer> players;
 	private Map<PersistentPlayer, Integer> results;
-	private EventBasedFrameVisualiser<VisualGameState> vis;
+	private EventReceiver er;
 	private ConnectionReporter reporter;
 
 	private int[] finalRanks;
 
-	public GameRunner(List<PersistentPlayer> players, int boardSize, TerrainMap map) {
+	public GameRunner(EventReceiver er, List<PersistentPlayer> players, int boardSize, TerrainMap map) {
 		this.players = players;
+		this.er = er;
 		results = new HashMap<PersistentPlayer, Integer>();
 		finalRanks = new int[players.size()];
 		reporter = new ConnectionReporter(players.size());
-		state = new GameState(players.size(), boardSize, map, reporter);
-	}
-
-	public void setEventVisualiser(EventBasedFrameVisualiser<VisualGameState> vis) {
-		this.vis = vis;
-		state.setUpForVisualisation(vis);
+		state = new GameState(players.size(), boardSize, map, reporter, er);
 	}
 
 	private boolean isFinished(int playerIndex) {
@@ -133,26 +128,7 @@ public class GameRunner implements GameHandler {
 		finalEvents.add(new WinnerEvent(name));
 		finalEvents.add(new EndGameEvent());
 		
-		vis.giveEvents(finalEvents);
-		int round = 0;
-		while (!vis.finishedVisualising() && vis.isVisualising() && round < 500) {
-			try {
-				round++;
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		if (vis.isVisualising()) {
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
+		er.giveEvents(finalEvents);
 	}
 
 	@Override

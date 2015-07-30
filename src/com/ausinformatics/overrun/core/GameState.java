@@ -1,19 +1,17 @@
-package com.ausinformatics.overrun;
+package com.ausinformatics.overrun.core;
 
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.ausinformatics.overrun.reporters.CopyingReporter;
-import com.ausinformatics.overrun.reporters.Reporter;
-import com.ausinformatics.overrun.reporters.VisualReporter;
-import com.ausinformatics.overrun.visualisation.VisualGameState;
-import com.ausinformatics.phais.core.visualisation.EventBasedFrameVisualiser;
+import com.ausinformatics.overrun.core.reporters.CopyingReporter;
+import com.ausinformatics.overrun.core.reporters.Reporter;
+import com.ausinformatics.overrun.core.reporters.EventReporter;
+import com.ausinformatics.phais.common.events.EventReceiver;
 import com.ausinformatics.phais.utils.Position;
 
 public class GameState {
 
-	private int numPlayers;
 	private int boardSize;
 	private TerrainMap map;
 	private Reporter reporter;
@@ -23,30 +21,24 @@ public class GameState {
 	private int[] curUnitId;
 	private ArrayList<ArrayList<Unit>> allUnits;
 
-	public GameState(int numPlayers, int boardSize, TerrainMap map, Reporter reporter) {
-		this.numPlayers = numPlayers;
+	public GameState(int numPlayers, int boardSize, TerrainMap map, Reporter reporter, EventReceiver er) {
 		this.boardSize = boardSize;
 		this.map = map;
-		this.reporter = reporter;
+		this.reporter = new CopyingReporter(reporter, new EventReporter(er));
+        for (int i = 0; i < numPlayers; i++) {
+            allUnits.add(new ArrayList<Unit>());
+            createUnit(i, 1);
+        }
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                reporter.squareUpdated(new Position(i, j), map.getTerrain(j, i), map.getTerrain(j, i));
+            }
+        }
 		unitsOnBoard = new Unit[boardSize][boardSize];
 		money = new int[numPlayers];
 		curUnitId = new int[numPlayers];
 		allUnits = new ArrayList<ArrayList<Unit>>();
 		
-	}
-
-	public void setUpForVisualisation(EventBasedFrameVisualiser<VisualGameState> vis) {
-		this.reporter = new CopyingReporter(reporter, new VisualReporter(vis));
-		for (int i = 0; i < numPlayers; i++) {
-			allUnits.add(new ArrayList<Unit>());
-			createUnit(i, 1);
-		}
-		for (int i = 0; i < boardSize; i++) {
-			for (int j = 0; j < boardSize; j++) {
-				reporter.squareUpdated(new Position(i, j), map.getTerrain(j, i), map.getTerrain(j, i));
-			}
-		}
-
 	}
 
 	// This should be able to be called on already dead players.

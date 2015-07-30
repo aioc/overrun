@@ -1,4 +1,4 @@
-package com.ausinformatics.overrun;
+package com.ausinformatics.overrun.core;
 
 import java.awt.Point;
 import java.util.Random;

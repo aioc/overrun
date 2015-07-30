@@ -1,4 +1,4 @@
-package com.ausinformatics.overrun.reporters;
+package com.ausinformatics.overrun.core.reporters;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.ausinformatics.overrun.Unit;
-import com.ausinformatics.phais.core.server.ClientConnection;
+import com.ausinformatics.overrun.core.Unit;
+import com.ausinformatics.phais.server.server.ClientConnection;
 import com.ausinformatics.phais.utils.Pair;
 import com.ausinformatics.phais.utils.Position;
 
