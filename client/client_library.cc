@@ -376,6 +376,7 @@ void err(const string& s) {
 
 
 void mainLoop(void) {
+  net::sendline("CLIENT");
   // First, let the user code do its own shit. It will set the player name.
   clientRegister();
 

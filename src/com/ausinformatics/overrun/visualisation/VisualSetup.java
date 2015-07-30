@@ -14,6 +14,7 @@ public class VisualSetup {
         gc.start();
         VisualiserDirector<VisualGameState> d = new VisualiserDirector<>(new CommonEventManager(), new VisualiserFactory());
         d.runForever(config.address, config.port, config.gid);
+        gc.timeout = -1;
     }
 
 }

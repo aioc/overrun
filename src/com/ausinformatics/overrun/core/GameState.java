@@ -25,6 +25,11 @@ public class GameState {
 		this.boardSize = boardSize;
 		this.map = map;
 		this.reporter = new CopyingReporter(reporter, new EventReporter(er));
+        allUnits = new ArrayList<ArrayList<Unit>>();
+        unitsOnBoard = new Unit[boardSize][boardSize];
+        money = new int[numPlayers];
+        curUnitId = new int[numPlayers];
+        
         for (int i = 0; i < numPlayers; i++) {
             allUnits.add(new ArrayList<Unit>());
             createUnit(i, 1);
@@ -34,10 +39,6 @@ public class GameState {
                 reporter.squareUpdated(new Position(i, j), map.getTerrain(j, i), map.getTerrain(j, i));
             }
         }
-		unitsOnBoard = new Unit[boardSize][boardSize];
-		money = new int[numPlayers];
-		curUnitId = new int[numPlayers];
-		allUnits = new ArrayList<ArrayList<Unit>>();
 		
 	}
 

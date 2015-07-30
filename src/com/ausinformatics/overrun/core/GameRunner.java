@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.ausinformatics.overrun.core.reporters.ConnectionReporter;
+import com.ausinformatics.overrun.visualisation.InitialGameEvent;
 import com.ausinformatics.overrun.visualisation.WinnerEvent;
 import com.ausinformatics.phais.common.events.EventReceiver;
 import com.ausinformatics.phais.common.events.VisualGameEvent;
@@ -23,12 +24,14 @@ public class GameRunner implements GameInstance {
 	private Map<PersistentPlayer, Integer> results;
 	private EventReceiver er;
 	private ConnectionReporter reporter;
+	private TerrainMap map;
 
 	private int[] finalRanks;
 
 	public GameRunner(EventReceiver er, List<PersistentPlayer> players, int boardSize, TerrainMap map) {
 		this.players = players;
 		this.er = er;
+		this.map = map;
 		results = new HashMap<PersistentPlayer, Integer>();
 		finalRanks = new int[players.size()];
 		reporter = new ConnectionReporter(players.size());
@@ -54,6 +57,25 @@ public class GameRunner implements GameInstance {
 
 	@Override
 	public void begin() {
+        InitialGameEvent ev = new InitialGameEvent();
+        ev.boardSize = map.getSize();
+        ev.numPlayers = players.size();
+        ev.playerNames = new ArrayList<>();
+        ev.playerColours = new ArrayList<>();
+        for (PersistentPlayer p : players) {
+            ev.playerNames.add(p.getName());
+            ev.playerColours.add(((Player) p).getColour());
+        }
+        ev.map = new int[ev.boardSize][ev.boardSize];
+        for (int i = 0; i < ev.boardSize; i++) {
+            for (int j = 0; j < ev.boardSize; j++) {
+                ev.map[i][j] = map.getTerrain(j, i);
+            }
+        }
+        List<VisualGameEvent> firstEventList = new ArrayList<>();
+        firstEventList.add(ev);
+        er.giveEvents(firstEventList);
+	    
 		int curTurn = 0;
 		while (results.size() < players.size() - 1 && curTurn < 500) {
 			curTurn++;

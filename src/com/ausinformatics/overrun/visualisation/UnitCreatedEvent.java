@@ -4,6 +4,10 @@ import com.ausinformatics.phais.common.events.VisualGameEvent;
 import com.ausinformatics.phais.utils.Position;
 
 public class UnitCreatedEvent extends VisualGameEvent {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 7736362948423172349L;
     public int player;
     public int unitId;
     public Position p;

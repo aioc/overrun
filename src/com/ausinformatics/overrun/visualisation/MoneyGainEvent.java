@@ -6,6 +6,10 @@ import com.ausinformatics.phais.common.events.VisualGameEvent;
 import com.ausinformatics.phais.utils.Position;
 
 public class MoneyGainEvent extends VisualGameEvent {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -1113507423118356684L;
     public int playerId;
     public int moneyGain;
     public List<Position> minedBlocks;
