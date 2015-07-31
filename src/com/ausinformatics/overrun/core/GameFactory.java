@@ -24,7 +24,7 @@ public class GameFactory implements GameBuilder {
         Collections.shuffle(players);
         for (int i = 0; i < players.size(); i++) {
             PersistentPlayer p = players.get(i);
-            String toSend = "NEWGAME " + players.size() + " " + boardSize + " " + i;
+            String toSend = "NEWGAME " + players.size() + " " + boardSize + " " + (i + 1);
             p.getConnection().sendInfo(toSend);
             try {
                 String inputString = p.getConnection().getStrInput();

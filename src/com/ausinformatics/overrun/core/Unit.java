@@ -24,6 +24,6 @@ public class Unit {
 	}
 	
 	public String toString() {
-		return ownerId + " " + myId + " " + p.r + " " + p.c + " " + strength;
+		return (ownerId + 1) + " " + myId + " " + p.r + " " + p.c + " " + strength;
 	}
 }

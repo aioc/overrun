@@ -163,7 +163,8 @@ bool new_game(const string& args) {
 
   if (num_players >= MAX_PLAYERS ||
       boardsize >= MAX_SIZE ||
-      player_id >= MAX_PLAYER_ID) {
+      player_id > MAX_PLAYER_ID ||
+      player_id == 0) {
     util::err("new game had bad params");
     return false;
   }
@@ -265,7 +266,7 @@ bool update_unit(const string& args) {
 bool user_turn(const string& args) {
   // Notify the client of game state.
   for (size_t i = 0; i < state.money.size(); i++)
-    clientMoneyInfo(i, state.money[i]);
+    clientMoneyInfo(i + 1, state.money[i]);
   for (size_t i = 0; i < state.map.size(); i++)
     for (size_t k = 0; k < state.map[i].size(); k++)
       clientTerrainInfo(k, i, state.map[i][k]);
