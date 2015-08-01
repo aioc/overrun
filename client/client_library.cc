@@ -142,10 +142,25 @@ bool error(const string& args) {
   return true;
 }
 
+string sanitize_name(const string& name) {
+  // Must be <= 16 chars, and replace spaces with _.
+  char res[17];
+  res[0] = '\0';
+  for (int i = 0; i < name.size() && i < 16; ++i) {
+    if (name[i] == ' ') {
+      res[i] = '_';
+    } else {
+      res[i] = name[i];
+    }
+    res[i + 1] = '\0';
+  }
+  return string(res);
+}
+
 bool name(const string& args) {
   std::ostringstream builder;
   builder << "NAME"
-      << " " << player.name
+      << " " << sanitize_name(player.name)
       << " " << (int) player.r
       << " " << (int) player.g
       << " " << (int) player.b;
