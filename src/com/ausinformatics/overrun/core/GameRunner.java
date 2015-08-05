@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ausinformatics.overrun.core.reporters.ConnectionReporter;
+import com.ausinformatics.client.GameClient.ProtocolRequest;
+import com.ausinformatics.overrun.core.reporters.MultiplePlayerReporter;
 import com.ausinformatics.overrun.visualisation.InitialGameEvent;
 import com.ausinformatics.overrun.visualisation.WinnerEvent;
 import com.ausinformatics.phais.common.events.EventReceiver;
@@ -23,7 +24,7 @@ public class GameRunner implements GameInstance {
 	private List<PersistentPlayer> players;
 	private Map<PersistentPlayer, Integer> results;
 	private EventReceiver er;
-	private ConnectionReporter reporter;
+	private MultiplePlayerReporter reporter;
 	private TerrainMap map;
 
 	private int[] finalRanks;
@@ -34,7 +35,7 @@ public class GameRunner implements GameInstance {
 		this.map = map;
 		results = new HashMap<PersistentPlayer, Integer>();
 		finalRanks = new int[players.size()];
-		reporter = new ConnectionReporter(players.size());
+		reporter = new MultiplePlayerReporter(players.size());
 		state = new GameState(players.size(), boardSize, map, reporter, er);
 	}
 
@@ -57,25 +58,25 @@ public class GameRunner implements GameInstance {
 
 	@Override
 	public void begin() {
-        InitialGameEvent ev = new InitialGameEvent();
-        ev.boardSize = map.getSize();
-        ev.numPlayers = players.size();
-        ev.playerNames = new ArrayList<>();
-        ev.playerColours = new ArrayList<>();
-        for (PersistentPlayer p : players) {
-            ev.playerNames.add(p.getName());
-            ev.playerColours.add(((Player) p).getColour());
-        }
-        ev.map = new int[ev.boardSize][ev.boardSize];
-        for (int i = 0; i < ev.boardSize; i++) {
-            for (int j = 0; j < ev.boardSize; j++) {
-                ev.map[i][j] = map.getTerrain(j, i);
-            }
-        }
-        List<VisualGameEvent> firstEventList = new ArrayList<>();
-        firstEventList.add(ev);
-        er.giveEvents(firstEventList);
-	    
+		InitialGameEvent ev = new InitialGameEvent();
+		ev.boardSize = map.getSize();
+		ev.numPlayers = players.size();
+		ev.playerNames = new ArrayList<>();
+		ev.playerColours = new ArrayList<>();
+		for (PersistentPlayer p : players) {
+			ev.playerNames.add(p.getName());
+			ev.playerColours.add(((Player) p).getColour());
+		}
+		ev.map = new int[ev.boardSize][ev.boardSize];
+		for (int i = 0; i < ev.boardSize; i++) {
+			for (int j = 0; j < ev.boardSize; j++) {
+				ev.map[i][j] = map.getTerrain(j, i);
+			}
+		}
+		List<VisualGameEvent> firstEventList = new ArrayList<>();
+		firstEventList.add(ev);
+		er.giveEvents(firstEventList);
+
 		int curTurn = 0;
 		while (results.size() < players.size() - 1 && curTurn < 500) {
 			curTurn++;
@@ -90,8 +91,10 @@ public class GameRunner implements GameInstance {
 				if (isFinished(i)) {
 					continue;
 				}
+
 				reporter.sendForPlayer(i, c);
-				c.sendInfo("YOURMOVE");
+				c.sendMessage(ProtocolRequest.newBuilder().setCommand(ProtocolRequest.Command.COMPUTE_MOVE).build());
+
 				boolean playerDied = false;
 				try {
 					PlayerMove move = PlayerMove.readPlayerMove(c);
@@ -104,10 +107,8 @@ public class GameRunner implements GameInstance {
 					}
 				} catch (DisconnectedException ex) {
 					playerDied = true;
-				} catch (BadProtocolException ex) {
-					c.sendInfo("BADPROT Invalid action. " + ex.getExtraInfo());
-					playerDied = true;
 				}
+
 				if (playerDied) {
 					state.killPlayer(i);
 					killPlayer(i);
@@ -131,7 +132,10 @@ public class GameRunner implements GameInstance {
 		int amoWinners = 0;
 		String name = "";
 		for (int i = 0; i < players.size(); i++) {
-			players.get(i).getConnection().sendInfo("GAMEOVER " + finalRanks[i]);
+			players.get(i).getConnection().sendMessage(ProtocolRequest.newBuilder()
+					.setCommand(ProtocolRequest.Command.GAMEOVER)
+					.setGameover(ProtocolRequest.GameoverParameters.newBuilder().setDetail("" + finalRanks[i]))
+					.build());
 			if (finalRanks[i] == 1) {
 				amoWinners++;
 				name = players.get(i).getName();
@@ -142,14 +146,13 @@ public class GameRunner implements GameInstance {
 		} else {
 			name = "The winner was " + name;
 		}
-		
-		
+
 		state.endGame();
-	
+
 		List<VisualGameEvent> finalEvents = new ArrayList<VisualGameEvent>();
 		finalEvents.add(new WinnerEvent(name));
 		finalEvents.add(new EndGameEvent());
-		
+
 		er.giveEvents(finalEvents);
 	}
 

@@ -1,0 +1,9 @@
+Protobufs
+=========
+
+You will need to download, compile, and install protoc (the protobuf compiler).
+
+Generate these for Java with `protoc proto/game_client.proto --java_out=src`.
+
+The Makefile in /client generates these automatically, and no intervention
+should be required.

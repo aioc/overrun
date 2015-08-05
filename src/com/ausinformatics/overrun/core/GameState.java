@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.ausinformatics.overrun.core.reporters.CopyingReporter;
-import com.ausinformatics.overrun.core.reporters.Reporter;
 import com.ausinformatics.overrun.core.reporters.EventReporter;
+import com.ausinformatics.overrun.core.reporters.Reporter;
 import com.ausinformatics.phais.common.events.EventReceiver;
 import com.ausinformatics.phais.utils.Position;
 
