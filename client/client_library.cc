@@ -16,24 +16,28 @@
 #include <netinet/tcp.h>
 #include <signal.h>
 
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include "proto/game_client.pb.h"
 #include "valley.h"
 
 using std::string;
 using std::vector;
 
 #define VERSION "0.3"
+#define MAX_PLAYER_NAME_LEN 16
 
 namespace {
 
+bool echo_mode;
+
 //////////////////////////////
-// Forward declarations
+// Tiny utils
 //
-namespace net {
-bool sendline(const string& rawdata);
-bool recvline(string* data);  // strips newline
-}  // namespace net
 namespace util {
-void err(const string& s);
+void err(const string& s) {
+  fprintf(stderr, "%s\n", s.c_str());
+}
 }  // namespace util
 
 
@@ -58,39 +62,30 @@ struct Unit {
   size_t x, y;
 };
 
-enum State {
-  ILLEGAL = 0,
-  USER_TURN = 1,
-};
-
 struct {
   vector<vector<int>> map;
   vector<int> money;
   std::map<Unit::Id, Unit> units;
 
-  State fsm;
-  vector<string> buffer_moves, buffer_builds;
+  client::GameMove move;
 
   void Reset(size_t num_players, size_t boardsize) {
     map = vector<vector<int>>(boardsize, vector<int>(boardsize, 0));
     money = vector<int>(num_players, 0);
     units.clear();
 
-    fsm = State::ILLEGAL;
-    buffer_moves.clear();
-    buffer_builds.clear();
+    move.Clear();
   }
 } state;
 
 }  // namespace
 
 
-
 //////////////////////////////
 // Public player methods
 //
 void setName(const char* name) {
-  player.name = name;
+  player.name = string(name).substr(0, MAX_PLAYER_NAME_LEN);
 }
 
 void setColour(int r, int g, int b) {
@@ -99,26 +94,14 @@ void setColour(int r, int g, int b) {
   player.b = b;
 }
 
-void move(int uid, int move) {
-  if (state.fsm != State::USER_TURN) {
-    util::err("Called move() but preconditions are not met.");
-    return;
-  }
-
-  std::ostringstream builder;
-  builder << uid << " " << move;
-  state.buffer_moves.push_back(builder.str());
+void move(int uid, int action) {
+  auto* move = state.move.add_move();
+  move->set_unit_id(uid);
+  move->set_action(static_cast<client::UnitMove_Action>(action));
 }
 
 void build(int cost) {
-  if (state.fsm != State::USER_TURN) {
-    util::err("Called build() but preconditions are not met.");
-    return;
-  }
-
-  std::ostringstream builder;
-  builder << cost;
-  state.buffer_builds.push_back(builder.str());
+  state.move.set_build(cost);
 }
 
 int getCost(int level) {
@@ -137,148 +120,88 @@ namespace {
 //
 namespace handlers {
 
-bool error(const string& args) {
-  util::err("Server sent an error: " + args);
+bool error(const client::ProtocolRequest& request) {
+  util::err("Server sent an error: " + request.error_detail());
   return true;
 }
 
-string sanitize_name(const string& name) {
-  // Must be <= 16 chars, and replace spaces with _.
-  char res[17];
-  res[0] = '\0';
-  for (int i = 0; i < name.size() && i < 16; ++i) {
-    if (name[i] == ' ') {
-      res[i] = '_';
-    } else {
-      res[i] = name[i];
-    }
-    res[i + 1] = '\0';
-  }
-  return string(res);
+bool name(const client::ProtocolRequest& request, client::ProtocolNameResponse* response) {
+  response->set_name(player.name);
+  response->set_r(player.r);
+  response->set_g(player.g);
+  response->set_b(player.b);
+  return true;
 }
 
-bool name(const string& args) {
-  std::ostringstream builder;
-  builder << "NAME"
-      << " " << sanitize_name(player.name)
-      << " " << (int) player.r
-      << " " << (int) player.g
-      << " " << (int) player.b;
-  return net::sendline(builder.str());
-}
+bool new_game(const client::ProtocolRequest& request, client::ProtocolNewGameResponse* response) {
+  const auto& params = request.newgame();
 
-bool new_game(const string& args) {
-  size_t num_players, boardsize, player_id;
-  std::istringstream builder(args);
-  builder >> num_players >> boardsize >> player_id;
-  if (builder.bad()) {
-    util::err("new game builder failed");
+  if (params.num_players() >= MAX_PLAYERS ||
+      params.board_size() >= MAX_SIZE ||
+      params.player_id() >= MAX_PLAYER_ID) {  // zero-based, adjust here before giving to user
+    util::err("new game had bad params: " + params.ShortDebugString());
     return false;
   }
 
-  if (num_players >= MAX_PLAYERS ||
-      boardsize >= MAX_SIZE ||
-      player_id > MAX_PLAYER_ID ||
-      player_id == 0) {
-    util::err("new game had bad params");
-    return false;
-  }
-
-  state.Reset(num_players, boardsize);
-  clientInit(num_players, boardsize, player_id);
-
-  return net::sendline("READY");
-}
-
-bool gameover(const string& args) {
-  printf("Game over: %s\n", args.c_str());
+  state.Reset(params.num_players(), params.board_size());
+  clientInit(params.num_players(), params.board_size(), params.player_id() + 1);
   return true;
 }
 
-bool update_cell(const string& args) {
-  std::istringstream builder(args);
-
-  size_t n = 0;
-  builder >> n;
-  for (size_t i = 0; i < n; i++) {
-    size_t x, y;
-    int value;
-    builder >> y >> x >> value;
-
-    if (builder.bad()) {
-      util::err("update cell builder failed");
-      return false;
-    }
-
-    if (x >= state.map.size() || y >= state.map.size()) {
-      util::err("update cell had bad params");
-      return false;
-    }
-
-    state.map[y][x] = value;
-  }
-
+bool gameover(const client::ProtocolRequest& request) {
+  printf("Game over: %s\n", request.gameover().detail().c_str());
   return true;
 }
 
-bool update_money(const string& args) {
-  std::istringstream builder(args);
+bool update_state(const client::ProtocolRequest& request) {
+  const auto& params = request.update_state();
 
-  for (auto& value : state.money) {
-    builder >> value;
-
-    if (builder.bad()) {
-      util::err("update money builder failed");
+  // Cells
+  for (const auto& info : params.cell_change()) {
+    if (info.x() >= state.map.size() || info.y() >= state.map.size()) {
+      util::err("cell_change item was bad: " + info.ShortDebugString());
       return false;
     }
 
-    if (value < 0) {
-      util::err("update money had bad params");
-      return false;
-    }
+    state.map[info.y()][info.x()] = info.value();
   }
 
-  return true;
-}
-
-bool update_unit(const string& args) {
-  std::istringstream builder(args);
-
-  size_t n = 0;
-  builder >> n;
-  for (size_t i = 0; i < n; i++) {
-    size_t player_id, unit_id, x, y;
-    Unit::Level level;
-    builder >> player_id >> unit_id >> y >> x >> level;
-
-    if (builder.bad()) {
-      util::err("update unit builder failed");
+  // Units
+  for (const auto& info : params.unit_change()) {
+    if (info.x() >= state.map.size() ||
+        info.y() >= state.map.size() ||
+        info.player_id() >= state.money.size()) {
+      util::err("unit_change item was bad: " + info.ShortDebugString());
       return false;
     }
 
-    if (x >= state.map.size() || y >= state.map.size()) {
-      util::err("update unit had bad params");
-      return false;
-    }
-
-    const Unit::Id id(player_id, unit_id);
-    if (level == 0) {
+    const Unit::Id id(info.player_id(), info.unit_id());
+    if (info.level() == 0) {
       // Unit died.
       state.units.erase(id);
     } else {
       // Unit alive.
       auto* unit = &state.units[id];
       unit->id = id;
-      unit->x = x;
-      unit->y = y;
-      unit->level = level;
+      unit->x = info.x();
+      unit->y = info.y();
+      unit->level = info.level();
     }
+  }
+
+  // Money
+  if (params.money_state_size() != state.money.size()) {
+    util::err("unexpected money_state size");
+    return false;
+  }
+  for (size_t i = 0; i < state.money.size(); i++) {
+    state.money[i] = params.money_state(i);
   }
 
   return true;
 }
 
-bool user_turn(const string& args) {
+bool compute_move(const client::ProtocolRequest& request, client::GameMove* response) {
   // Notify the client of game state.
   for (size_t i = 0; i < state.money.size(); i++)
     clientMoneyInfo(i + 1, state.money[i]);
@@ -287,147 +210,126 @@ bool user_turn(const string& args) {
       clientTerrainInfo(k, i, state.map[i][k]);
   for (const auto it : state.units) {
     const auto& unit = it.second;
-    clientDroneLocation(unit.id.first, unit.id.second, unit.x, unit.y, unit.level);
+    clientDroneLocation(unit.id.first + 1, unit.id.second, unit.x, unit.y, unit.level);
   }
 
-  state.fsm = State::USER_TURN;
+  state.move.Clear();
   clientDoTurn();
-  state.fsm = State::ILLEGAL;
-
-  std::ostringstream builder("MOVE", std::ostringstream::ate);
-
-  // Building
-  if (state.buffer_builds.size() == 0) {
-    builder << " " << 0;
-  } else {
-    builder << " " << state.buffer_builds.back();
-  }
-
-  // Moving
-  builder << " " << state.buffer_moves.size();
-  for (const auto& move : state.buffer_moves)
-    builder << " " << move;
-
-  state.buffer_moves.clear();
-  state.buffer_builds.clear();
-
-  return net::sendline(builder.str());
+  *response = state.move;
+  return true;
 }
 
 }  // namespace handlers
 
 
-// Returns true on success.
-typedef std::function<bool(const string&)> command_func_t;
-
-
-const std::map<string, command_func_t> commands{
-  {"ERROR", handlers::error},
-
-  {"NAME", handlers::name},
-  {"NEWGAME", handlers::new_game},
-  {"GAMEOVER", handlers::gameover},
-
-  {"CELL", handlers::update_cell},
-  {"MINERALS", handlers::update_money},
-  {"LOCATION", handlers::update_unit},
-
-  {"YOURMOVE", handlers::user_turn},
-};
-
-
-/**********************************************
- *                                            *
- *         IF THIS IS DONE CORRECTLY,         *
- *        YOU WILL NOT HAVE TO CHANGE         *
- *          STUFF BELOW THIS COMMENT          *
- *                                            *
- **********************************************/
-
-int sock;
-bool echo_mode;
-
-
 namespace net {
 
-bool sendline(const string& rawdata) {
-  const string line = rawdata + "\n";
-  if (echo_mode) {
-    fprintf(stderr, "\x1b[1;35m> \"");
-    fprintf(stderr, "%s", rawdata.c_str());
-    fprintf(stderr, "\"\x1b[0m\n");
+bool ReadLengthDelimitedMessage(
+    google::protobuf::io::ZeroCopyInputStream* zcis,
+    google::protobuf::Message* message) {
+  uint32_t protosz;
+  {
+    google::protobuf::io::LimitingInputStream lis(zcis, sizeof(protosz));
+    google::protobuf::io::CodedInputStream input(&lis);
+
+    if (!input.ReadLittleEndian32(&protosz))
+      return false;
+    if (protosz >> 31)
+      return false;
   }
 
-  ssize_t sent = send(sock, line.c_str(), line.size(), 0);
-  return sent == line.size();
+  {
+    google::protobuf::io::LimitingInputStream lis(zcis, protosz);
+    google::protobuf::io::CodedInputStream input(&lis);
+
+    if (!message->ParseFromCodedStream(&input))
+      return false;
+    if (!input.ConsumedEntireMessage())
+      return false;
+  }
+
+  if (echo_mode) {
+    fprintf(stderr, "\x1b[0;32m> ");
+    fprintf(stderr, "%s", message->ShortDebugString().c_str());
+    fprintf(stderr, "\x1b[0m\n");
+  }
+
+  return true;
 }
 
-// Receives until a newline and strips it
-bool recvline(string* data) {
-  data->clear();
-  char c;
-  bool success = false;
-  while (recv(sock, &c, 1, 0) == 1) {
-    if (c == '\n') {
-      success = true;
-      break;
-	}
-    *data += c;
+void SendLengthDelimitedMessage(
+    google::protobuf::io::ZeroCopyOutputStream* zcos,
+    const google::protobuf::Message& message) {
+  {
+    google::protobuf::io::CodedOutputStream output(zcos);
+
+    // No error checks.
+    const string data(message.SerializeAsString());
+    output.WriteLittleEndian32(data.size());
+    output.WriteString(data);
   }
+
+  // HACK
+  dynamic_cast<google::protobuf::io::FileOutputStream*>(zcos)->Flush();
+
   if (echo_mode) {
-    fprintf(stderr, "\x1b[1;32m< \"");
-    fprintf(stderr, "%s", data->c_str());
-    fprintf(stderr, "\"\x1b[0m\n");
+    fprintf(stderr, "\x1b[0;31m< ");
+    fprintf(stderr, "%s", message.ShortDebugString().c_str());
+    fprintf(stderr, "\x1b[0m\n");
   }
-  return success;
 }
 
 }  // namespace net
 
-namespace util {
-void err(const string& s) {
-  fprintf(stderr, "%s\n", s.c_str());
-}
-}  // namespace util
 
-
-void mainLoop(void) {
-  net::sendline("CLIENT");
+void mainLoop(google::protobuf::io::ZeroCopyInputStream* input,
+    google::protobuf::io::ZeroCopyOutputStream* output) {
   // First, let the user code do its own shit. It will set the player name.
   clientRegister();
 
-  while (true) {
-    string line;
-    if (!net::recvline(&line))
+  bool keep_going = true;
+  while (keep_going) {
+    client::ProtocolRequest command;
+    if (!net::ReadLengthDelimitedMessage(input, &command))
       break;
 
-    // Split line on space into (command, args).
-    string command = line, args;
-    const auto space_idx = line.find(" ");
-    if (space_idx != string::npos) {
-      command = line.substr(0, space_idx);
-      args = line.substr(space_idx + 1, line.length());
+#define DO_FAST(enum, handler)  \
+    case client::ProtocolRequest::enum:  \
+        keep_going = handlers::handler(command); break;
+#define DO_RESPONSE(enum, handler, type)  \
+    case client::ProtocolRequest::enum: {  \
+        type response;  \
+        keep_going = handlers::handler(command, &response);  \
+        if (keep_going) net::SendLengthDelimitedMessage(output, response);  \
+        break;  \
     }
 
-    // Invoke the appropriate handler.
-    const auto it = commands.find(command);
-    if (it != commands.end()) {
-      if (!it->second(args)) {
-        // Encountered an error -- disconnect.
-        fprintf(stderr, "Error: Failed to process command %s\n",
-            command.c_str());
-        break;
-      }
-    } else {
-      fprintf(stderr, "Error: server sent unknown command \"%s\"\n"
-          "(as part of \"%s\"\n", command.c_str(), line.c_str());
-      break;
+    switch (command.command()) {
+      // Protocol commands
+      DO_FAST(ERROR, error);
+      DO_RESPONSE(NAME, name, client::ProtocolNameResponse);
+      DO_RESPONSE(NEWGAME, new_game, client::ProtocolNewGameResponse);
+      DO_FAST(GAMEOVER, gameover);
+
+      // Game
+      DO_FAST(UPDATE_STATE, update_state);
+      DO_RESPONSE(COMPUTE_MOVE, compute_move, client::GameMove);
+
+      case client::ProtocolRequest::UNKNOWN:
+      default:
+        fprintf(stderr, "Error: server sent unknown command: %s", command.ShortDebugString().c_str());
+        assert(!"buddy, this is wrong");
+        continue;
     }
+
+#undef DO_FAST
+#undef DO_RESPONSE
   }
 }
 
-void connectServer(char *server, int port) {
+int connectServer(char *server, int port) {
   // Create socket
+  int sock;
   if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
     fprintf(stderr, "Error: could not create socket. This is bad\n");
     exit(EXIT_FAILURE);
@@ -461,6 +363,8 @@ void connectServer(char *server, int port) {
     sock = -1;
     // We failed to connect :(
   }
+
+  return sock;
 }
 
 ///////////////////////////////////////////////
@@ -585,10 +489,12 @@ int main(int argc, char *argv[]) {
   srand(time(0));
   // Always connect
   while (true) {
+    int sock = -1;
+
     // Attempt to connect here
     while (true) {
       fprintf(stderr, "Attempting to connect...");
-      connectServer(server, port);
+      sock = connectServer(server, port);
       if (-1 != sock) {
         break;
       }
@@ -596,11 +502,22 @@ int main(int argc, char *argv[]) {
       sleep(1);
     }
     fprintf(stderr, "   connected!\n");
-    mainLoop();
+
+    // HACK: send a "client" tag
+    char tag = 'C';
+    send(sock, &tag, 1, 0);
+
+    {  // Make a scope for the input streams.
+      google::protobuf::io::FileInputStream fis(sock);
+      google::protobuf::io::FileOutputStream fos(sock);
+      mainLoop(&fis, &fos);
+    }
+
     fprintf(stderr, "Was disconnected\n");
     shutdown(sock, SHUT_RDWR);
     close(sock);
     sleep(2);
   }
+
   return EXIT_SUCCESS;
 }

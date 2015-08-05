@@ -1,0 +1,85 @@
+syntax = "proto2";
+
+package client;
+option java_package = "com.ausinformatics.client";
+
+message ProtocolRequest {
+  enum Command {
+    UNKNOWN = 0;
+
+    // Protocol commands
+    ERROR = 1;
+    NAME = 2;
+    NEWGAME = 3;
+    GAMEOVER = 4;
+
+    // Game commands
+    UPDATE_STATE = 5;
+    COMPUTE_MOVE = 6;
+  }
+
+  optional Command command = 1;
+  optional string error_detail = 2;
+
+  message NewgameParameters {
+    optional uint32 num_players = 1;
+    optional uint32 board_size = 2;
+    optional uint32 player_id = 3;  // Range [1..N]
+  }
+  optional NewgameParameters newgame = 3;
+
+  message GameoverParameters {
+    optional string detail = 1;
+  }
+  optional GameoverParameters gameover = 4;
+
+  message UpdateStateParameters {
+    message CellUpdate {
+      optional uint32 x = 1;
+      optional uint32 y = 2;
+      optional int32 value = 3;  // Signed.
+    }
+    repeated CellUpdate cell_change = 1;
+
+    message UnitUpdate {
+      optional uint32 player_id = 1;
+      optional uint32 unit_id = 2;
+      optional uint32 x = 3;
+      optional uint32 y = 4;
+      optional uint32 level = 5;
+    }
+    repeated UnitUpdate unit_change = 2;
+
+    repeated uint32 money_state = 3;
+  }
+  optional UpdateStateParameters update_state = 5;
+}
+
+message ProtocolNameResponse {
+  optional string name = 1;
+  optional uint32 r = 2;
+  optional uint32 g = 3;
+  optional uint32 b = 4;
+}
+
+message ProtocolNewGameResponse {
+  // Empty
+}
+
+message UnitMove {
+  enum Action {
+    MOVE_NORTH = 0;
+    MOVE_EAST = 1;
+    MOVE_SOUTH = 2;
+    MOVE_WEST = 3;
+    EXTRACT = 4;
+  }
+
+  optional uint32 unit_id = 1;
+  optional Action action = 2;
+}
+
+message GameMove {
+  optional uint32 build = 1;
+  repeated UnitMove move = 2;
+}
