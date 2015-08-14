@@ -65,10 +65,11 @@ public class GameState {
 		}
 		for (UnitMove u : move.unitMoves) {
 			if (!playersUnits.containsKey(u.id)) {
-				reporter.sendError(id, "You gave an invalid id (either dead or non-existant): " + u.id);
+				reporter.sendError(id, "You gave an invalid id (either dead, dupicate order, or non-existant): " + u.id);
 				continue;
 			}
 			Unit unit = playersUnits.get(u.id);
+			playersUnits.remove(u.id);
 			// Remove from board.
 			unitsOnBoard[unit.p.r][unit.p.c] = null;
 			// Find new position.
