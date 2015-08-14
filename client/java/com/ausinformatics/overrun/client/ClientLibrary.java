@@ -19,6 +19,12 @@ import org.reflections.Reflections;
 
 import com.ausinformatics.phais.utils.Pair;
 
+/** This class is the manager of all things client.
+ *
+ * It is the main() entry point of the client, as well as providing all network
+ * communication. It also provides a {@link ClientInterface} that your class
+ * must implement if it intends to play the game
+ */
 public class ClientLibrary {
 
     private static ClientInterface client;
@@ -26,8 +32,13 @@ public class ClientLibrary {
 
     private static Socket socket;
     private static InputStreamReader socketReader;
+    /** Set ClientLibrary.echo_mode = true if you need to debug network
+     * traffic. Likely won't be needed by a client, but sometimes it's worth
+     * knowing what the server sends vs what you believe about what you're
+     * receiving
+     */
     public static boolean echo_mode = false;
-    private final String VERSION = "0.1a";
+    private final String VERSION = "0.1";
 
     private static Player player;
     private static State state;
@@ -415,6 +426,10 @@ public class ClientLibrary {
     /************************************************
      * These are the only functions that a user should care about
      */
+    /** Returns the singleton instance of the ClientLibrary. This will be
+     * necessary if you intend to call functions like {@link #build(int cost)}
+     * or similar
+     */
     public static ClientLibrary getInstance() {
         if (mInstance == null) {
             mInstance = new ClientLibrary();
@@ -422,40 +437,182 @@ public class ClientLibrary {
         return mInstance;
     }
 
+    /** The client interface. You <b><i>must</i></b> implement this class for
+     * your bot to actually function (since the ClientLibrary determines
+     * through reflection the name of your class).
+     */
     public interface ClientInterface {
+
+        /** A set of helpful constants */
         public class Constants {
+            /** The max number of players that will ever be in a game. */
             public final static int MAX_PLAYERS = 90;
+            /** The maximum side-length of the board. */
             public final static int MAX_SIZE = 100;
+            /** The maximum player ID that will ever be assigned to a player */
             public final static int MAX_PLAYER_ID = 100000;
 
+            /** This constant indicates a wall on the map */
             public final static int WALL = -99;
+            /** This constant indicates a completely blank cell; no minerals,
+             * bases or walls
+             */
             public final static int BLANK_CELL = 0;
 
+            /** The move constant to move north */
             public final static int NORTH = 0;
+            /** The move constant to move east */
             public final static int EAST = 1;
+            /** The move constant to move south */
             public final static int SOUTH = 2;
+            /** The move constant to move west */
             public final static int WEST = 3;
+            /** The move constant to extract money from a square */
             public final static int EXTRACT = 4;
         }
 
+        /** This function is called when your client connects to the server.
+         *
+         * <p>
+         * You need to provide a name using {@link #setName(String)}, and
+         * optionally choose a colour using {@link #setColour(int, int, int)}
+         * </p>
+         *
+         * <p>
+         * clientRegister() must return within 1 second.
+         * </p>
+         */
         public void clientRegister();
+
+        /** This is called when a game is about to begin.
+         * <p>
+         * You are not required to make any calls in this function.
+         * </p>
+         *
+         * @param playerCount The number of players in this game
+         * @param boardSize The length of the side of the board (The board will
+         * be square.)
+         * @param playerId Your player ID. Your base has a type of -playerId
+         * (see {@link #clientTerrainInfo(int, int, int)})
+         *
+         * <p>
+         * This function must return within 1 second
+         * </p>
+         */
         public void clientInit(int playerCount, int boardSize, int playerId);
+
+        /** This function is called once per player currently alive, before
+         * your turn begins.
+         *
+         * <p>
+         * You are not required to make any calls in this function
+         * </p>
+         *
+         * @param pid The player being reported
+         * @param moneyCount How much money the player currently has banked
+         *
+         * <p>
+         * This function must return within 1 second
+         * </p>
+         */
         public void clientMoneyInfo(int pid, int moneyCount);
+
+        /** This function is called once per square on the map, before you
+         * take your turn.
+         * <p>
+         * You are not required to make any calls in this function.
+         * </p>
+         *
+         * @param x The x coordinate of the square being reported
+         * @param y The y coordinate of the square being reported
+         * @param type The type of this terrain. <br/><table>
+                <tr><td><b>Value</b></td><td><b>Type</b></td></tr>
+                <tr><td>0</td><td>Blank square</td></tr>
+                <tr><td>{@link ClientInterface.Constants#WALL}</td><td>A wall</td></tr>
+                <tr><td><i>n</i>, <i>n</i> &lt; 0</td>
+                    <td>The home base of player -n. If -n is your ID, this is
+                        your base</td>
+                </tr>
+                <tr><td><i>x</i>, <i>x</i> &gt; 0</td>
+                    <td>A square with <i>x</i> resources</td>
+                </tr></table>
+         *
+         * <p>
+         * This function will not ever be called with any information about the
+         * units on the map. This function must return within 1 second.
+         * </p>
+         */
         public void clientTerrainInfo(int x, int y, int type);
+
+        /** This function is called once per unit on the map, before your
+         * turn.
+         *
+         * <p>
+         * You are not required to call anything from this function.
+         * </p>
+         *
+         * @param pid The ID of the player who owns this unit
+         * @param id The ID of this unit. The pair (pId, id) is guaranteed to
+         * be unique across the game, however (id) itself is not.
+         * @param x The x value of the square this unit sits on
+         * @param y The y value of the square this unit sits on
+         * @param numCans The number of cans this drone has in its stock.
+         *
+         * <p>
+         * This function must return within 1 second
+         * </p>
+         */
         public void clientDroneLocation(int pid, int id, int x, int y, int numCans);
+
+        /** This function is called when it is your turn to play.
+         *
+         * <p>
+         * You are not required to call anything from this function, but it is
+         * strongly suggested that you call some combination of
+         * {@link #move(int, int)}, {@link #build(int)}, {@link #getCost(int)},
+         * and {@link #getCans(int)} from within this function.
+         * </p>
+         *
+         * <p>
+         * This function must return within <b>2 seconds</b>
+         * </p>
+         */
         public void clientDoTurn();
     }
 
+    /** This will ask the server to set your name. Names are sanitised to
+     * remove spaces and be at most 16 characters long.
+     *
+     * @param name Your name
+     */
     public void setName(final String name) {
         player.name = name;
     }
 
+    /** This will ask the server to set the colour of your AI. For a given game
+     * you are not guaranteed to be exactly this colour (if two colours are
+     * considered 'too close'); in this case your colour will be used as a
+     * starting hint for the final game colour.
+     *
+     * @param r The r value of your colour, between 0 and 255.
+     * @param g The g value of your colour, between 0 and 255.
+     * @param b The b value of your colour, between 0 and 255.
+     */
     public void setColour(final int r, final int g, final int b) {
         player.r = r;
         player.g = g;
         player.b = b;
     }
 
+    /** This function asks the server to move one of your units. It may only be
+     * called from {@link ClientInterface#clientDoTurn()}. If you ask the server
+     * to move the same unit multiple times per turn, only the first request
+     * will be respected; the remainder will be ignored
+     *
+     * @param uid The Id of the unit you wish to move.
+     * @param move The command you wish to issue (see the constants defined in
+     * {@link Constants})
+     */
     public void move(int uid, int move) {
         if (state.fsm != State.STATE.USER_TURN) {
             Util.err("Called move() but preconditions are not met.");
@@ -469,6 +626,14 @@ public class ClientLibrary {
         state.buffer_moves.add(sb.toString());
     }
 
+    /** This function asks the server to build a unit. It may only be called
+     * from within {@link ClientInterface#clientDoTurn()}. You may only build
+     * one unit per turn; the <i>last</i> such request will be honoured and the
+     * remainder will be ignored.
+     *
+     * @param cost The amount of money you wish to spend on this unit. See
+     * {@link #getCost(int)} and {@link #getCans(int)}
+     */
     public void build(int cost) {
         if (state.fsm != State.STATE.USER_TURN) {
             Util.err("Called build() but preconditions are not met");
@@ -479,12 +644,25 @@ public class ClientLibrary {
         state.buffer_builds.add(sb.toString());
     }
 
-    public int getCost(int level) {
-        return level;
+    /** This function returns the cost to build a unit. It may be called at any
+     * time.
+     *
+     * @param cans The number of cans that the unit has
+     * @return The cost to build a unit with the given number of cans
+     */
+    public int getCost(int cans) {
+        return cans;
     }
 
-    public int getCans(int cost) {
-        return cost;
+    /** This function returns the number of cans a unit will start with, given a cost.
+     * It may be called at any time.
+     *
+     * @param value The value you wish to spend on this unit
+     * @return The number of cans this unit will start with, given the value
+     * you wish to spend on it.
+     */
+    public int getCans(int value) {
+        return value;
     }
 
     /*************************************************/
@@ -581,6 +759,9 @@ public class ClientLibrary {
                 + "\te: Echo all network traffic\n", name);
     }
 
+    /** The entry point of the client. You should not attempt to write your own
+     * main function!
+     */
     public static void main(String[] args) {
         ClientLibrary library = ClientLibrary.getInstance();
 
