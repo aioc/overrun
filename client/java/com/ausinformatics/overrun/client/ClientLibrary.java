@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
+
+import org.reflections.Reflections;
 
 public class ClientLibrary {
     private static class Unit {
@@ -362,7 +365,7 @@ public class ClientLibrary {
     }
 
     private static ClientLibrary mInstance;
-    final Map<String, command_func_t> commands;
+    private final Map<String, command_func_t> commands;
 
     protected ClientLibrary() {
         commands = new HashMap<String, command_func_t>(8);
@@ -485,8 +488,7 @@ public class ClientLibrary {
 
     /*************************************************/
 
-    /* These should all be hidden from prying eyes */
-    public void mainLoop() {
+    private void mainLoop() {
         player = new Player();
         state = new State();
         Net.sendline("CLIENT");
@@ -517,7 +519,7 @@ public class ClientLibrary {
         }
     }
 
-    public void connectServer(String server, int port) {
+    private void connectServer(String server, int port) {
         try {
             socket = new Socket(Inet4Address.getByName(server), port);
         } catch (Exception e) {
@@ -533,11 +535,11 @@ public class ClientLibrary {
         }
     }
 
-    public boolean isSocketGood() {
+    private boolean isSocketGood() {
         return socket != null;
     }
 
-    public void disconnectServer() {
+    private void disconnectServer() {
         try {
             socket.close();
         } catch (IOException e) {
@@ -546,7 +548,7 @@ public class ClientLibrary {
         }
     }
 
-    public void printVersion() {
+    private void printVersion() {
         System.err.printf("\n"
                 + "*******************************\n"
                 + "*          Welcome to         *\n"
@@ -554,11 +556,90 @@ public class ClientLibrary {
                 + "*******************************\n", VERSION);
     }
 
-    public void printHelp(String name) {
+    private void printHelp(String name) {
         System.err.printf("Usage: %s [-hvse] server-ip [port]\n"
                 + "Options:\n"
                 + "\th: Print out this help\n"
                 + "\tv: Print out the version message\n"
                 + "\te: Echo all network traffic\n", name);
+    }
+
+    public static void main(String[] args) {
+        ClientLibrary library = ClientLibrary.getInstance();
+
+        library.printVersion();
+        String server = null;
+        int port = 12317;
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].startsWith("-")) {
+                if (args[i].contains("h")) {
+                    String myName = Thread.currentThread().getStackTrace()[2].getClassName();
+                    library.printHelp(myName);
+                }
+                if (args[i].contains("v")) {
+                    library.printVersion();
+                }
+                if (args[i].contains("e")) {
+                    ClientLibrary.echo_mode = true;
+                }
+            } else if (server == null) {
+                server = args[i];
+            } else {
+                try {
+                    port = Integer.parseInt(args[i]);
+                } catch (Exception e) {
+                    System.err.println("Must provide a valid integer for the port\n");
+                    return;
+                }
+            }
+        }
+
+        if (server == null) {
+            System.err.println("Must provide a server address\n");
+            return;
+        }
+
+        /* Find the class that implements ClientInterface */
+        Reflections reflections = new Reflections("com.ausinformatics.overrun.client");
+        Set<Class<? extends ClientLibrary.ClientInterface>> classes = reflections.getSubTypesOf(ClientLibrary.ClientInterface.class);
+        ClientLibrary.ClientInterface client = null;
+        for (Class<? extends ClientLibrary.ClientInterface> cls : classes) {
+            try {
+                client = (ClientLibrary.ClientInterface) cls.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                System.err.println("Couldn't find a class that implements ClientInterface; this is unrecoverable");
+                return;
+            }
+        }
+
+        library.registerClient(client);
+
+        System.err.println("Configured!");
+        System.err.printf("Trying to connect to %s, port %d\n", server, port);
+        while (true) {
+            while (true) {
+                System.err.println("Attempting to connect...");
+                library.connectServer(server, port);
+                if (library.isSocketGood())
+                    break;
+                System.err.println("    failed to connect. Will retry...");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+            System.err.println("    connected!");
+            library.mainLoop();
+            System.err.println("Was disconnected\n");
+            library.disconnectServer();
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
     }
 }
