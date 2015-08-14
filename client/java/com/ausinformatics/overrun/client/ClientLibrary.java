@@ -3,9 +3,11 @@ package com.ausinformatics.overrun.client;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.net.Inet4Address;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +23,7 @@ public class ClientLibrary {
     private static ClientLibrary mInstance;
 
     private static Socket socket;
+    private static InputStreamReader socketReader;
     public static boolean echo_mode = true;
     private final String VERSION = "0.1a";
 
@@ -116,8 +119,7 @@ public class ClientLibrary {
             char c;
             boolean success = false;
             try {
-                InputStreamReader reader = new InputStreamReader(socket.getInputStream());
-                while ((c = (char)reader.read()) != -1) {
+                while ((c = (char)socketReader.read()) != -1) {
                     if (c == '\n') {
                         success = true;
                         break;
@@ -311,6 +313,9 @@ public class ClientLibrary {
                 if (level == 0) {
                     state.units.remove(unit.id);
                 } else {
+                    if (!state.units.containsKey(unit.id)) {
+                        state.units.put(unit.id, unit);
+                    }
                     state.units.get(unit.id).id = unit.id;
                     state.units.get(unit.id).x = x;
                     state.units.get(unit.id).y = y;
@@ -519,16 +524,31 @@ public class ClientLibrary {
     private void connectServer(String server, int port) {
         try {
             socket = new Socket(Inet4Address.getByName(server), port);
+        } catch (UnknownHostException e) {
+            System.err.println("Error: Unknown host \"" + server + "\". Did you use the right address?");
+            System.err.println("Error: This is unrecoverable");
+            System.exit(-1);
+        } catch (ConnectException e) {
+            System.err.println("Error: Could not connect to the server. Is the server running?");
+            return;
         } catch (Exception e) {
             System.err.println("Error: could not create socket. This is unrecoverable\n");
             e.printStackTrace();
-            System.exit(1);
+            return;
         }
 
         try {
             socket.setTcpNoDelay(true /* on */);
         } catch (SocketException e) {
             e.printStackTrace();
+        }
+
+        try {
+            socketReader = new InputStreamReader(socket.getInputStream());
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.exit(-1);
         }
     }
 
@@ -538,6 +558,7 @@ public class ClientLibrary {
 
     private void disconnectServer() {
         try {
+            socketReader.close();
             socket.close();
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -628,10 +649,12 @@ public class ClientLibrary {
                     break;
                 }
             }
-            System.err.println("    connected!");
-            library.mainLoop();
-            System.err.println("Was disconnected\n");
-            library.disconnectServer();
+            if (library.isSocketGood()) {
+                System.err.println("    connected!");
+                library.mainLoop();
+                System.err.println("Was disconnected\n");
+                library.disconnectServer();
+            }
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
