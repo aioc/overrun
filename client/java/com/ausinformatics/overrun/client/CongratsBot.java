@@ -74,24 +74,22 @@ class CongratsBot implements ClientLibrary.ClientInterface {
         amountOfPlayers = playerCount;
         size = boardSize;
         myId = playerId;
-
         numUnits = 0;
+
         // playerIds are 1-indexed
         playersMinerals = new int[amountOfPlayers + 1];
         terrain = new int[size][size];
         whatOnSquare = new unitOnSquare[size][size];
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
+        for (int i = 0; i < size; i++)
+            for (int j = 0; j < size; j++)
                 whatOnSquare[i][j] = new unitOnSquare();
-            }
-        }
+
         // There can never be more units than there are squares on the
         // board....
         // I would describe this as the 'elegant' solution.
         allUnits = new unit[Constants.MAX_SIZE * Constants.MAX_SIZE];
-        for (int i = 0; i < Constants.MAX_SIZE * Constants.MAX_SIZE; i++) {
+        for (int i = 0; i < Constants.MAX_SIZE * Constants.MAX_SIZE; i++)
             allUnits[i] = new unit();
-        }
     }
 
     @Override
@@ -133,8 +131,7 @@ class CongratsBot implements ClientLibrary.ClientInterface {
                     System.out.printf("Mine all the things, %d %d, %d %d\n",
                             allUnits[i].y, allUnits[i].x, allUnits[i].unitId,
                             allUnits[i].level);
-                    for (int j = 0; j < 100; j++)
-                        library.move(allUnits[i].unitId, Constants.EXTRACT);
+                    library.move(allUnits[i].unitId, Constants.EXTRACT);
                 } else {
                     // Otherwise, we check to see whether a unit which isn't
                     // ours is around us.
@@ -194,17 +191,12 @@ class CongratsBot implements ClientLibrary.ClientInterface {
             System.out.printf("\n");
         }
         
+
         // Reset the data we stored since we'll be given a fresh copy next
         // round
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                // just set their levels to 0, since we assume level = 0 means
-                // death.
-                whatOnSquare[i][j].level = 0;
-            }
-        }
-
-        // And forget about everything in allUnits too
         numUnits = 0;
+        for (int i = 0; i < size; i++)
+            for (int j = 0; j < size; j++)
+                whatOnSquare[i][j] = new unitOnSquare();
     }
 }

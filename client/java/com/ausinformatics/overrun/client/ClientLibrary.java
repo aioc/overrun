@@ -17,6 +17,8 @@ import java.util.Set;
 
 import org.reflections.Reflections;
 
+import com.ausinformatics.phais.utils.Pair;
+
 public class ClientLibrary {
 
     private static ClientInterface client;
@@ -24,7 +26,7 @@ public class ClientLibrary {
 
     private static Socket socket;
     private static InputStreamReader socketReader;
-    public static boolean echo_mode = true;
+    public static boolean echo_mode = false;
     private final String VERSION = "0.1a";
 
     private static Player player;
@@ -33,15 +35,13 @@ public class ClientLibrary {
     private final Map<String, command_func_t> commands;
 
     private static class Unit {
-        public class Id {
-            public int pId;
-            public int uId;
-            
-            public Id(int p, int u) {
-                pId = p;
-                uId = u;
+        /* "Typedef" */
+        public class Id extends Pair<Integer, Integer> {
+            Id(Integer a, Integer b) {
+                super(a, b);
             }
         }
+
         public Id id;
         public int level;
         public int x;
@@ -334,7 +334,7 @@ public class ClientLibrary {
                     client.clientTerrainInfo(j, i, state.map[i][j]);
             for (final Map.Entry<Unit.Id, Unit> item : state.units.entrySet()) {
                 Unit unit = item.getValue();
-                client.clientDroneLocation(unit.id.pId, unit.id.uId, unit.x, unit.y, unit.level);
+                client.clientDroneLocation(unit.id.first, unit.id.second, unit.x, unit.y, unit.level);
             }
 
             state.fsm = State.STATE.USER_TURN;
