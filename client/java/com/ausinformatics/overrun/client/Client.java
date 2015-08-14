@@ -43,11 +43,11 @@ class Client {
 
         /* Find the class that implements ClientInterface */
         Reflections reflections = new Reflections("com.ausinformatics.overrun.client");
-        Set<Class<? extends ClientInterface>> classes = reflections.getSubTypesOf(ClientInterface.class);
-        ClientInterface client = null;
-        for (Class<? extends ClientInterface> cls : classes) {
+        Set<Class<? extends ClientLibrary.ClientInterface>> classes = reflections.getSubTypesOf(ClientLibrary.ClientInterface.class);
+        ClientLibrary.ClientInterface client = null;
+        for (Class<? extends ClientLibrary.ClientInterface> cls : classes) {
             try {
-                client = (ClientInterface) cls.newInstance();
+                client = (ClientLibrary.ClientInterface) cls.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

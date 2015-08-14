@@ -13,21 +13,6 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class ClientLibrary {
-    public class Constants {
-        public final static int MAX_PLAYERS = 90;
-        public final static int MAX_SIZE = 100;
-        public final static int MAX_PLAYER_ID = 100000;
-
-        public final static int WALL = -99;
-        public final static int BLANK_CELL = 0;
-
-        public final static int NORTH = 0;
-        public final static int EAST = 1;
-        public final static int SOUTH = 2;
-        public final static int WEST = 3;
-        public final static int EXTRACT = 4;
-    }
-
     private static class Unit {
         public class Id {
             public int pId;
@@ -208,9 +193,9 @@ public class ClientLibrary {
                 return false;
             }
 
-            if (num_players >= Constants.MAX_PLAYERS ||
-                    boardsize >= Constants.MAX_SIZE || 
-                    player_id > Constants.MAX_PLAYER_ID ||
+            if (num_players >= ClientInterface.Constants.MAX_PLAYERS ||
+                    boardsize >= ClientInterface.Constants.MAX_SIZE || 
+                    player_id > ClientInterface.Constants.MAX_PLAYER_ID ||
                     player_id == 0) {
                 Util.err("New game had bad parameters");
                 inp.close();
@@ -421,6 +406,30 @@ public class ClientLibrary {
             }
         });
     }
+
+public interface ClientInterface {
+    public class Constants {
+        public final static int MAX_PLAYERS = 90;
+        public final static int MAX_SIZE = 100;
+        public final static int MAX_PLAYER_ID = 100000;
+
+        public final static int WALL = -99;
+        public final static int BLANK_CELL = 0;
+
+        public final static int NORTH = 0;
+        public final static int EAST = 1;
+        public final static int SOUTH = 2;
+        public final static int WEST = 3;
+        public final static int EXTRACT = 4;
+    }
+
+    public void clientRegister();
+    public void clientInit(int playerCount, int boardSize, int playerId);
+    public void clientMoneyInfo(int pid, int moneyCount);
+    public void clientTerrainInfo(int x, int y, int type);
+    public void clientDroneLocation(int pid, int id, int x, int y, int numCans);
+    public void clientDoTurn();
+}
 
     public void setName(final String name) {
         player.name = name;

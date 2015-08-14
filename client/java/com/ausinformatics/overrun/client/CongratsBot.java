@@ -1,6 +1,6 @@
 package com.ausinformatics.overrun.client;
 
-class CongratsBot implements ClientInterface {
+class CongratsBot implements ClientLibrary.ClientInterface {
 
     @Override
     public void clientRegister() {
