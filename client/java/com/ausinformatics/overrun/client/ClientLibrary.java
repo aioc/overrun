@@ -115,10 +115,10 @@ public class ClientLibrary {
 
         public static boolean recvline(StringBuilder data) {
             data.delete(0, data.length());
-            char c;
+            char c = (char) -1;
             boolean success = false;
             try {
-                while ((c = (char)socketReader.read()) != -1) {
+                while ((c = (char)socketReader.read()) != (char) -1) {
                     if (c == '\n') {
                         success = true;
                         break;
