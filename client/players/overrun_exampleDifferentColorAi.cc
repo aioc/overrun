@@ -1,7 +1,8 @@
 /*
- *  This example creates whatever it can make and moves around randomly, with two exceptions.
- *  The first is that if any unit is on a resource patch, it will get them. Also, if it is next
- *  to an enemey unit it will attack them.
+ *  This example creates whatever it can make and moves around randomly, with
+ *  two exceptions.  The first is that if any unit is on a resource patch, it
+ *  will acquire the resources. Also, if it is next to an enemy unit it will
+ *  attack them.
  */
 
 #include <stdio.h>
@@ -51,7 +52,7 @@ void clientDoTurn() {
       if (allUnits[i].ownerID == myID) {
          // We will always try and move one of ours. First, check to see if it is on a mineral patch
          if (terrain[allUnits[i].y][allUnits[i].x] > 0) { // A value > 0 means a mineral patch
-            // We want to mine
+            // We want to mine resources
             printf ("Mine all the things, %d %d, %d %d\n", allUnits[i].y, allUnits[i].x, allUnits[i].unitID, allUnits[i].level);
             move (allUnits[i].unitID, EXTRACT);
          } else {
@@ -120,8 +121,9 @@ void clientDoTurn() {
 
 
 void clientRegister() {
-   // We need to call setName ()
-   setName ("Dumbo2000");
+   // We need to call setName () and should call setColour ()
+   setName ("CongratsBot");
+   setColour (255, 20, 147);
 
    // We also want to seed the random generator
    srand (time (NULL));
@@ -154,4 +156,3 @@ void clientDroneLocation(int pid, int id, int x, int y, int level) {
    whatOnSquare[y][x].level = level;
    numUnits++;
 }
-
