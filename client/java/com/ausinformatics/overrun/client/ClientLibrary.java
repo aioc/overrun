@@ -361,9 +361,10 @@ public class ClientLibrary {
         public boolean f(final String s);
     }
 
+    private static ClientLibrary mInstance;
     final Map<String, command_func_t> commands;
 
-    public ClientLibrary() {
+    protected ClientLibrary() {
         commands = new HashMap<String, command_func_t>(8);
         commands.put("ERROR", new command_func_t() {
             @Override public boolean f(final String s) {
@@ -407,29 +408,39 @@ public class ClientLibrary {
         });
     }
 
-public interface ClientInterface {
-    public class Constants {
-        public final static int MAX_PLAYERS = 90;
-        public final static int MAX_SIZE = 100;
-        public final static int MAX_PLAYER_ID = 100000;
-
-        public final static int WALL = -99;
-        public final static int BLANK_CELL = 0;
-
-        public final static int NORTH = 0;
-        public final static int EAST = 1;
-        public final static int SOUTH = 2;
-        public final static int WEST = 3;
-        public final static int EXTRACT = 4;
+    /************************************************
+     * These are the only functions that a user should care about
+     */
+    public static ClientLibrary getInstance() {
+        if (mInstance == null) {
+            mInstance = new ClientLibrary();
+        }
+        return mInstance;
     }
 
-    public void clientRegister();
-    public void clientInit(int playerCount, int boardSize, int playerId);
-    public void clientMoneyInfo(int pid, int moneyCount);
-    public void clientTerrainInfo(int x, int y, int type);
-    public void clientDroneLocation(int pid, int id, int x, int y, int numCans);
-    public void clientDoTurn();
-}
+    public interface ClientInterface {
+        public class Constants {
+            public final static int MAX_PLAYERS = 90;
+            public final static int MAX_SIZE = 100;
+            public final static int MAX_PLAYER_ID = 100000;
+
+            public final static int WALL = -99;
+            public final static int BLANK_CELL = 0;
+
+            public final static int NORTH = 0;
+            public final static int EAST = 1;
+            public final static int SOUTH = 2;
+            public final static int WEST = 3;
+            public final static int EXTRACT = 4;
+        }
+
+        public void clientRegister();
+        public void clientInit(int playerCount, int boardSize, int playerId);
+        public void clientMoneyInfo(int pid, int moneyCount);
+        public void clientTerrainInfo(int x, int y, int type);
+        public void clientDroneLocation(int pid, int id, int x, int y, int numCans);
+        public void clientDoTurn();
+    }
 
     public void setName(final String name) {
         player.name = name;
@@ -472,6 +483,9 @@ public interface ClientInterface {
         return cost;
     }
 
+    /*************************************************/
+
+    /* These should all be hidden from prying eyes */
     public void mainLoop() {
         player = new Player();
         state = new State();

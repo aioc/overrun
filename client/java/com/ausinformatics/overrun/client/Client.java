@@ -8,7 +8,8 @@ class Client {
     private static ClientLibrary library;
 
     public static void main(String[] args) {
-        library = new ClientLibrary();
+        library = ClientLibrary.getInstance();
+
         library.printVersion();
         String server = null;
         int port = 12317;
