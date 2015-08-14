@@ -16,6 +16,19 @@ import java.util.Set;
 import org.reflections.Reflections;
 
 public class ClientLibrary {
+
+    private static ClientInterface client;
+    private static ClientLibrary mInstance;
+
+    private static Socket socket;
+    public static boolean echo_mode = true;
+    private final String VERSION = "0.1a";
+
+    private static Player player;
+    private static State state;
+
+    private final Map<String, command_func_t> commands;
+
     private static class Unit {
         public class Id {
             public int pId;
@@ -77,19 +90,6 @@ public class ClientLibrary {
         public int g = 0;
         public int b = 255;
     };
-
-    private static ClientInterface client;
-
-    public void registerClient(ClientInterface c) {
-        client = c;
-    }
-
-    private static Socket socket;
-    public static boolean echo_mode = true;
-    private final String VERSION = "0.1a";
-
-    private static Player player;
-    private static State state;
 
     private static class Net {
         public static boolean sendline(final String rawdata) {
@@ -364,9 +364,6 @@ public class ClientLibrary {
         public boolean f(final String s);
     }
 
-    private static ClientLibrary mInstance;
-    private final Map<String, command_func_t> commands;
-
     protected ClientLibrary() {
         commands = new HashMap<String, command_func_t>(8);
         commands.put("ERROR", new command_func_t() {
@@ -614,7 +611,7 @@ public class ClientLibrary {
             }
         }
 
-        library.registerClient(client);
+        ClientLibrary.client = client;
 
         System.err.println("Configured!");
         System.err.printf("Trying to connect to %s, port %d\n", server, port);
