@@ -114,7 +114,6 @@ public class ClientLibrary {
         }
 
         public static boolean recvline(StringBuilder data) {
-            System.err.println("Recvline");
             data.delete(0, data.length());
             char c;
             boolean success = false;

@@ -133,7 +133,8 @@ class CongratsBot implements ClientLibrary.ClientInterface {
                     System.out.printf("Mine all the things, %d %d, %d %d\n",
                             allUnits[i].y, allUnits[i].x, allUnits[i].unitId,
                             allUnits[i].level);
-                    library.move(allUnits[i].unitId, Constants.EXTRACT);
+                    for (int j = 0; j < 100; j++)
+                        library.move(allUnits[i].unitId, Constants.EXTRACT);
                 } else {
                     // Otherwise, we check to see whether a unit which isn't
                     // ours is around us.
