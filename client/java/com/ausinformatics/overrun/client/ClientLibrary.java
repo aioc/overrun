@@ -707,10 +707,12 @@ public class ClientLibrary {
             System.exit(-1);
         } catch (ConnectException e) {
             System.err.println("Error: Could not connect to the server. Is the server running?");
+            socket = null;
             return;
         } catch (Exception e) {
             System.err.println("Error: could not create socket. This is unrecoverable\n");
             e.printStackTrace();
+            System.exit(-1);
             return;
         }
 
